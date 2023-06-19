@@ -1,0 +1,3 @@
+{% extends '@SprintFAdmin/base/index.html.twig' %}
+
+{% block title %}{{ label.plural|capitalize }}{% if account is defined %} по счету {{ account.number }}{% endif %}{% endblock %}

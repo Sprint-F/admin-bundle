@@ -1,0 +1,65 @@
+{# \App\Admin\Form\Type\FileUploadType #}
+{% block file_upload_row %}
+    {%- set widget_attr = {} -%}
+    {%- if help is not empty -%}
+        {%- set widget_attr = {attr: {'aria-describedby': id ~"_help"}} -%}
+    {%- endif -%}
+    {%- set row_class = row_class|default(row_attr.class|default('mb-3')|trim) -%}
+    <{{ element|default('div') }}{% with {attr: row_attr|merge({class: row_class})} %}{{ block('attributes') }}{% endwith %}>
+    {%- if 'form-floating' in row_class -%}
+        {{- form_widget(form, widget_attr) -}}
+        {{- form_label(form) -}}
+    {%- else -%}
+        {{- form_label(form) -}}
+        {{- form_widget(form, widget_attr) -}}
+    {%- endif -%}
+    {%- if form.vars.data is not empty -%}
+    <div class="btn float-end"><input type="checkbox" class="form-check-input" id="{{ form.vars.id~'_delete' }}" name="{{ form.vars.full_name~'[delete]' }}" value="1"><label class="form-check-label" for="{{ form.vars.id~'_delete' }}">&nbsp;удалить?</label></div>
+    <a href="{{- asset(form.vars.data) -}}" class="btn btn-link text-info float-end" target="_blank">Файл загружен</a>
+    {%- endif -%}
+    {{- form_help(form) -}}
+    {{- form_errors(form) -}}
+    </{{ element|default('div') }}>
+{% endblock %}
+
+{# \App\Admin\Form\Type\TextEditorType #}
+{% block text_editor_row %}
+    {%- set widget_attr = {} -%}
+    {%- if help is not empty -%}
+    {%- set widget_attr = {attr: {'aria-describedby': id ~"_help"}} -%}
+    {%- endif -%}
+    {%- set row_class = row_class|default(row_attr.class|default('mb-3')|trim) -%}
+    <{{ element|default('div') }}{% with {attr: row_attr|merge({class: row_class})} %}{{ block('attributes') }}{% endwith %}>
+    {%- if 'form-floating' in row_class -%}
+    {{- form_widget(form, widget_attr) -}}
+    {{- form_label(form) -}}
+    {%- else -%}
+    {{- form_label(form) -}}
+    {{- form_widget(form, widget_attr) -}}
+    {%- endif -%}
+    {{- form_help(form) -}}
+    {{- form_errors(form) -}}
+    </{{ element|default('div') }}>
+    <script>
+        var tinymceappended = (typeof tinymceappended === 'undefined') ? false : tinymceappended;
+        var tinymceloaded = (typeof tinymceloaded === 'undefined') ? false : tinymceloaded;
+        if (false === tinymceappended) {
+            var tinymcesript = document.createElement('script');
+            tinymcesript.src = "https://cdn.tiny.cloud/1/{{ tinyMceApiKey }}/tinymce/6/tinymce.min.js";
+            document.head.append(tinymcesript);
+            tinymceappended = true;
+        }
+        if (false === tinymceloaded) {
+            tinymcesript.addEventListener('load', function () {
+                tinymceloaded = true;
+                tinymce.init({
+                    selector: '#{{ form.vars.id }}'
+                });
+            });
+        } else {
+            tinymce.init({
+                selector: '#{{ form.vars.id }}'
+            });
+        }
+    </script>
+{% endblock %}

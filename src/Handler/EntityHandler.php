@@ -1,0 +1,316 @@
+<?php
+
+namespace SprintF\Bundle\Admin\Handler;
+
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToOne;
+use Doctrine\ORM\QueryBuilder;
+use SprintF\Bundle\Admin\Attribute\AdminField;
+use SprintF\Bundle\Admin\Attribute\EntityLabel;
+use SprintF\Bundle\Admin\Enum\EnumWithLabelInterface;
+use SprintF\Bundle\Admin\Field\BooleanField;
+use SprintF\Bundle\Admin\Field\DateField;
+use SprintF\Bundle\Admin\Field\DateTimeField;
+use SprintF\Bundle\Admin\Field\EntityField;
+use SprintF\Bundle\Admin\Field\EnumField;
+use SprintF\Bundle\Admin\Field\HasManyField;
+use SprintF\Bundle\Admin\Field\HasOneField;
+use SprintF\Bundle\Admin\Field\JsonField;
+use SprintF\Bundle\Admin\Field\TextField;
+use SprintF\Bundle\Admin\Form\Type\SelectEntityType;
+use SprintF\Bundle\Workflow\WorkflowEntityInterface;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\EnumType;
+use Symfony\Contracts\Service\Attribute\Required;
+
+/**
+ * Сервис для работы с сущностями для админ-панели.
+ */
+class EntityHandler
+{
+    protected EntityManagerInterface $em;
+
+    #[Required]
+    public function setEntityManager(EntityManagerInterface $entityManager)
+    {
+        $this->em = $entityManager;
+    }
+
+    /**
+     * Возвращает объект с наименованиями сущности в разных числах и падежах.
+     */
+    public function getEntityLabel(string $entityClass): EntityLabel
+    {
+        $classReflector = new \ReflectionClass($entityClass);
+        $attrs = $classReflector->getAttributes(EntityLabel::class);
+        if (empty($attrs)) {
+            $attr = new EntityLabel(
+                single: 'Entity', plural: 'Entities'
+            );
+        } else {
+            $attr = $attrs[0]->newInstance();
+        }
+
+        return $attr;
+    }
+
+    /**
+     * Возвращает базовый QueryBuilder, настроенный на выборку всех сущностей указанного класса из базы данных
+     * Порядок задается полями первичного ключа.
+     */
+    public function getEntityFindAllQuery(string $entityClass): QueryBuilder
+    {
+        $qb = $this->em->createQueryBuilder();
+        $qb->select('e')->from($entityClass, 'e');
+        foreach ($this->getPrimaryKeyFields($entityClass) as $primaryKeyField) {
+            $qb->addOrderBy('e.'.$primaryKeyField->name, 'ASC');
+        }
+
+        return $qb;
+    }
+
+    /**
+     * Возвращает QueryBuilder, настроенный на выборку всех записей в логе действий над указанной по ID сущностью.
+     */
+    public function getEntityFindAllLogEntriesQuery(string $entityClass, $entityId): QueryBuilder
+    {
+        /** @var WorkflowEntityInterface $entityClass */
+        $actionLogEntryClass = $entityClass::getActionLogEntryClass();
+        $qb = $this->em->createQueryBuilder();
+        $qb->select('l')->from($actionLogEntryClass, 'l');
+
+        foreach ($this->getPrimaryKeyFields($entityClass) as $primaryKeyField) {
+            // @todo: две следующих строки подолежат рефакторингу, если мы перейдем однажды на составные первичные ключи
+            $qb->andWhere('l.entityId=:id');
+            $qb->setParameter(':id', $entityId);
+        }
+
+        $qb->addOrderBy('l.id', 'DESC');
+
+        return $qb;
+    }
+
+    /**
+     * Возвращает репозиторий для работы с сущностями.
+     */
+    public function getEntityRepository(string $entityClass): EntityRepository
+    {
+        return $this->em->getRepository($entityClass);
+    }
+
+    /**
+     * Получает сущность из базы данных либо возвращает новую сущность.
+     */
+    public function findOrNewEntity(string $entityClass, $id = null): ?object
+    {
+        if (null === $id) {
+            return new $entityClass();
+        }
+
+        return $this->getEntityRepository($entityClass)->find($id);
+    }
+
+    /**
+     * Сохраняет в базу данных новую или измененную сущность.
+     */
+    public function saveEntity(object $entity): void
+    {
+        $this->em->persist($entity);
+        $this->em->flush();
+    }
+
+    /**
+     * Удаляет сущность из базы данных.
+     */
+    public function removeEntity(object $entity): void
+    {
+        $this->em->remove($entity);
+        $this->em->flush();
+    }
+
+    /**
+     * Соответствие типов полей Doctrine и типов полей админ-панели.
+     */
+    protected function getFieldClassByDoctrineType(string $doctrineType): string
+    {
+        return match ($doctrineType) {
+            'date' => DateField::class,
+            'datetime' => DateTimeField::class,
+            'boolean' => BooleanField::class,
+            'text' => TextField::class,
+            'json' => JsonField::class,
+            default => EntityField::class,
+        };
+    }
+
+    /**
+     * Возвращает полный список полей сущности.
+     *
+     * @return EntityField[]
+     */
+    public function getFields(string $entityClass): array
+    {
+        $allEntityProperties = (new \ReflectionClass($entityClass))->getProperties();
+        $fields = [];
+        foreach ($allEntityProperties as $property) {
+            // Статические свойства нас не интересуют, пропускаем
+            if ($property->isStatic()) {
+                continue;
+            }
+
+            // Обычное свойство, связанное с поле в БД Doctrine
+            $propertyColumnAttributes = $property->getAttributes(Column::class);
+            if (!empty($propertyColumnAttributes)) {
+                $propertyColumnAttribute = $propertyColumnAttributes[0]->newInstance();
+                $propertyType = $propertyColumnAttribute->type;
+
+                $adminFieldAttributes = $property->getAttributes(AdminField::class);
+                if (!empty($adminFieldAttributes)) {
+                    /** @var AdminField $adminFieldAttribute */
+                    $adminFieldAttribute = $adminFieldAttributes[0]->newInstance();
+                    $label = $adminFieldAttribute->getLabel();
+                    $help = $adminFieldAttribute->help;
+                } else {
+                    $label = $property->getName();
+                }
+
+                $isPrimary = false;
+                $propertyIdAttributes = $property->getAttributes(Id::class);
+                if (!empty($propertyIdAttributes)) {
+                    $isPrimary = true;
+                }
+
+                // Определяем класс поля в админ-панели
+                switch (true) {
+                    case !empty($adminFieldAttribute->class):
+                        $fieldClass = $adminFieldAttribute->class;
+                        break;
+                    case is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class):
+                        $fieldClass = EnumField::class;
+                        break;
+                    default:
+                        $fieldClass = $this->getFieldClassByDoctrineType($propertyType);
+                }
+
+                // Определяем класс поля формы Symfony
+                switch (true) {
+                    case is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class):
+                        $formType = EnumType::class;
+                        break;
+                    default:
+                        $formType = $fieldClass::FORM_TYPE;
+                }
+
+                $formOptions = ['required' => !$property->getType()?->allowsNull()];
+                if (is_a($formType, CheckboxType::class, true)) {
+                    $formOptions['required'] = false;
+                }
+                if (is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class) && enum_exists($property->getType()?->getName())) {
+                    $enumType = $property->getType()?->getName();
+                    $formOptions['class'] = $enumType;
+                    $formOptions['choice_label'] = function ($choice, $key, $value) {
+                        return $choice->label();
+                    };
+                }
+                if (!empty($help)) {
+                    $formOptions['help'] = $help;
+                }
+
+                $fields[$property->getName()] = new ($fieldClass)(
+                    name: $property->getName(),
+                    label: $label,
+                    formType: $formType,
+                    formOptions: $formOptions,
+                    primary: $isPrimary,
+                );
+
+                if (!empty($adminFieldAttribute->uploadPath)) {
+                    $fields[$property->getName()]->uploadPath = $adminFieldAttribute->uploadPath;
+                }
+            }
+
+            // Отношение "многие-к-одному" или "один-к-одному"
+            $propertyHasOneAttributes = $property->getAttributes(ManyToOne::class) ?: $property->getAttributes(OneToOne::class);
+            if (!empty($propertyHasOneAttributes)) {
+                $field = $this->getFieldForHasOneProperty($property, $propertyHasOneAttributes[0]->newInstance());
+                if (null !== $field) {
+                    $fields[$property->getName()] = $field;
+                }
+            }
+
+            // Отношение "многие-ко-многим"
+            $propertyHasManyAttributes = $property->getAttributes(ManyToMany::class);
+            if (!empty($propertyHasManyAttributes)) {
+                $field = $this->getFieldForHasManyProperty($property, $propertyHasManyAttributes[0]->newInstance());
+                if (null !== $field) {
+                    $fields[$property->getName()] = $field;
+                }
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Возвращает список полей сущности, входящих в первичный ключ.
+     */
+    public function getPrimaryKeyFields(string $entityClass): array
+    {
+        return array_filter($this->getFields($entityClass), fn (EntityField $entityField) => $entityField->primary);
+    }
+
+    /**
+     * По рефлектору свойства и по атрибуту Doctrine ManyToOne или OneToOne строим объект поля админ-панели.
+     */
+    private function getFieldForHasOneProperty(\ReflectionProperty $property, ManyToOne|OneToOne $propertyHasOneAttribute): ?HasOneField
+    {
+        $targetEntity = $propertyHasOneAttribute->targetEntity;
+
+        $adminFieldAttributes = $property->getAttributes(AdminField::class);
+        if (empty($adminFieldAttributes)) {
+            return null;
+        }
+
+        /** @var AdminField $adminFieldAttribute */
+        $adminFieldAttribute = $adminFieldAttributes[0]->newInstance();
+        $label = $adminFieldAttribute->getLabel();
+
+        return new HasOneField(
+            name: $property->getName(),
+            label: $label,
+            formType: SelectEntityType::class,
+            formOptions: ['required' => !$property->getType()?->allowsNull(), 'class' => $targetEntity],
+            primary: false,
+        );
+    }
+
+    /**
+     * По рефлектору свойства и по атрибуту Doctrine ManyToMany строим объект поля админ-панели.
+     */
+    private function getFieldForHasManyProperty(\ReflectionProperty $property, ManyToMany $propertyHasManyAttribute): ?HasManyField
+    {
+        $targetEntity = $propertyHasManyAttribute->targetEntity;
+
+        $adminFieldAttributes = $property->getAttributes(AdminField::class);
+        if (empty($adminFieldAttributes)) {
+            return null;
+        }
+
+        /** @var AdminField $adminFieldAttribute */
+        $adminFieldAttribute = $adminFieldAttributes[0]->newInstance();
+        $label = $adminFieldAttribute->getLabel();
+
+        return new HasManyField(
+            name: $property->getName(),
+            label: $label,
+            formType: SelectEntityType::class,
+            formOptions: ['multiple' => true, 'required' => false, 'class' => $targetEntity],
+            primary: false,
+        );
+    }
+}

@@ -1,0 +1,25 @@
+{% extends '@SprintFAdmin/layouts/admin/main.html.twig' %}
+
+{% block title %}Действие &laquo;{{ action.title }}&raquo;{% endblock %}
+
+{% block nav %}
+    {% include '@SprintFAdmin/layouts/admin/parts/nav.html.twig' with {'active': route|trim('/')} %}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body">
+
+            {{ form(form) }}
+
+        </div>
+    </div>
+
+{% endblock %}

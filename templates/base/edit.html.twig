@@ -1,0 +1,32 @@
+{% extends '@SprintFAdmin/layouts/admin/main.html.twig' %}
+
+{% block title %}{{ (isNew ? 'Создание ' : 'Редактирование ') ~ label.singleGen }}{% endblock %}
+
+{% block nav %}
+    {% include '@SprintFAdmin/layouts/admin/parts/nav.html.twig' with {'active': route|trim('/')} %}
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% include '@SprintFAdmin/layouts/admin/parts/breadcrumbs.html.twig' with {'items' : [
+        {'label': label.plural|capitalize, 'url': route},
+        {'label': (isNew ? 'Создание ' : 'Редактирование ') ~ label.singleGen},
+    ]} %}
+{% endblock %}
+
+{% block buttons %}
+    {% include '@SprintFAdmin/layouts/admin/parts/buttons.html.twig' with {'items' : [
+    ]} %}
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body">
+
+            {{ form(form) }}
+
+        </div>
+    </div>
+
+{% endblock %}

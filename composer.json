@@ -1,0 +1,39 @@
+{
+    "name": "sprintf/admin-bundle",
+    "description": "Symfony Admin Bundle by Sprint-F.RU",
+    "license": "MIT",
+    "type": "symfony-bundle",
+    "keywords": [
+        "Admin",
+        "Dashboard"
+    ],
+    "authors": [
+        {
+            "name": "Albert Stepantsev",
+            "email": "albert.stepantsev@sprintf.ru"
+        }
+    ],
+    "homepage": "https://sprintf.ru",
+    "require": {
+        "php": "^8.1"
+    },
+    "require-dev": {
+    },
+    "conflict": {
+    },
+    "suggest": {
+        "ext-pdo": "*"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "SprintF\\Bundle\\Admin\\": "src/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "symfony/flex": true
+        },
+        "sort-packages": true
+    }
+}

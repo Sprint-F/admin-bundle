@@ -1,0 +1,43 @@
+{% extends '@SprintFAdmin/layouts/admin/main.html.twig' %}
+{% import '@SprintFAdmin/macro/macro.html.twig' as macro %}
+
+{% block title %}Админ-панель{% endblock %}
+
+{% block nav %}
+    {% include '@SprintFAdmin/layouts/admin/parts/nav.html.twig' with {'active': 'admin'} %}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block content %}
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-0">
+            <div class="row p-4">
+                <div class="line-chart"></div>
+                <script>
+                    window.onload = function () {
+                        new Chartist.Line('.line-chart', {
+                            labels: {{ registrations|keys|json_encode|raw }},
+                            series: [
+                                {{ registrations|values|json_encode|raw }},
+                            ]
+                        }, {
+                            fullWidth: true,
+                            chartPadding: {
+                                right: 60
+                            },
+                            plugins: [
+                                Chartist.plugins.tooltip()
+                            ]
+                        });
+                    };
+                </script>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

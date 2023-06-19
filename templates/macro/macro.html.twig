@@ -1,0 +1,113 @@
+{% macro pager(route, total, num) %}
+    {% if total == 0 %}
+        {% set parts = [[1]] %}
+    {% elseif total <=6 %}
+        {% set parts = [range(1, total)] %}
+    {% elseif num<=6 or num>=total-5  %}
+        {% if num<=6 %}
+            {% set parts = [range(1, num+1), range(total-2, total)] %}
+        {% elseif num>=total-5 %}
+            {% set parts = [range(1, 3), range(num-1, total)] %}
+        {% endif %}
+    {% else %}
+        {% set parts = [range(1, 3), range(num-1, num+1), range(total-2, total)] %}
+    {% endif %}
+
+    <nav>
+        <ul class="pagination mb-0">
+            {% if 1 != num %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ route }}?page=1">&lt;&lt;</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="{{ route }}?page={{ num-1 }}">&lt;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&lt;&lt;</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">&lt;</span>
+                </li>
+            {% endif %}
+            {% for part in parts %}
+                {% for page in part %}
+                    <li class="page-item{% if num==page %} active{% endif %}">
+                        <a class="page-link" href="{{ route }}?page={{ page }}">{{ page }}</a>
+                    </li>
+                {% endfor %}
+                {% if not loop.last %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if total != num %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ route }}?page={{ num+1 }}">&gt;</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="{{ route }}?page={{ total }}">&gt;&gt;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&gt;</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">&gt;&gt;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endmacro %}
+
+{% macro table_buttons(items) %}
+    {% for item in items %}
+        <a href="{{ item.url }}" class="btn btn-outline-gray-600 d-inline-flex align-items-center">
+            {{ (item.icon ?? '')|raw }}
+            {{ item.label }}
+        </a>
+    {% endfor %}
+{% endmacro %}
+
+{% macro table_actions(items) %}
+    {% if items %}
+        <span class="btn-group">
+            <a class="btn btn-primary d-inline-flex align-items-center dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                Действия
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-start">
+                {% for action in items %}
+                    <li><a class="dropdown-item" href="{{ action.url }}">{{ action.label }}</a></li>
+                {% endfor %}
+            </ul>
+        </span>
+    {% endif %}
+{% endmacro %}
+
+{% macro entity_buttons(items, entity) %}
+    {% for buttonF in items %}
+        {% set button = call(buttonF, entity) %}
+        <a class="btn btn-sm btn-icon-only btn-primary" href="{{ button.url }}" {% if button.onclick %}onclick='{{ (button.onclick ?? '')|raw }}'{% endif %}>
+            {{ (button.icon ?? '')|raw }} {{ button.label }}
+        </a>
+    {% endfor %}
+{% endmacro %}
+
+{% macro entity_actions(items, entity) %}
+    {% if items %}
+        <span class="btn-group">
+            <a class="btn btn-primary btn-sm btn-icon-only dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <svg class="icon icon-xs" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-start">
+                {% for actionF in items %}
+                    {% set button = call(actionF, entity) %}
+                    {% if button.visible(entity) %}
+                    <li><a class="dropdown-item" href="{{ button.url }}">{{ (button.icon ?? '')|raw }} {{ button.label }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </span>
+    {% endif %}
+{% endmacro %}

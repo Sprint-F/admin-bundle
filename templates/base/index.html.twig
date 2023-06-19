@@ -1,0 +1,82 @@
+{% extends '@SprintFAdmin/layouts/admin/main.html.twig' %}
+{% import '@SprintFAdmin/macro/macro.html.twig' as macro %}
+
+{% block title %}{{ label.plural|capitalize }}{% endblock %}
+
+{% block nav %}
+    {% include '@SprintFAdmin/layouts/admin/parts/nav.html.twig' with {'active': route|trim('/')} %}
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% include '@SprintFAdmin/layouts/admin/parts/breadcrumbs.html.twig' with {'items' : [{'label': label.plural|capitalize, 'url': route}]} %}
+{% endblock %}
+
+{% block buttons %}
+    {{ macro.table_buttons(buttons.table) }}
+    {{ macro.table_actions(actions.table) }}
+{% endblock %}
+
+{% block content %}
+
+    <style>
+        .card .table td, .card .table th {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        .table td, .table th {
+            white-space: normal;
+        }
+        .table th {
+            vertical-align: top;
+        }
+    </style>
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-0">
+            <div class="row p-4">
+                <p>Всего записей: {{ entities.total }}</p>
+            </div>
+
+            <div class="row p-4">
+                {{ macro.pager(route, pages.total, pages.num) }}
+            </div>
+
+            <div class="table-responsive mb-5">
+                <table class="table table-centered table-nowrap mb-0 rounded">
+                    <thead class="thead-light">
+                    <tr>
+                        {% for field in fields %}
+                            <th class="border-0{% if loop.first %} rounded-start{% endif %}{% if loop.last %} rounded-end{% endif %}">
+                                {{ field.label|trans }}
+                            </th>
+                        {% endfor %}
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for entity in entities.data %}
+                    <tr>
+                        {% for field in fields %}
+                            <td>{{ field.renderAsLabel(entity)|raw }}</td>
+                        {% endfor %}
+                        <td style="text-align: right">
+                            <div class="btn-group" role="group">
+                                {{ macro.entity_buttons(buttons.entity, entity) }}
+                                {{ macro.entity_actions(actions.entity, entity) }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
