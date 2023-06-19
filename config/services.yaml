@@ -10,4 +10,7 @@ services:
       - '../src/DependencyInjection/'
       - '../src/Entity/'
 
+  SprintF\Bundle\Admin\Twig\TwigExtension:
+    tags: ['twig.extension']
+
 parameters:
