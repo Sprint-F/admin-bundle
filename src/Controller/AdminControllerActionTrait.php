@@ -18,6 +18,7 @@ use Symfony\Contracts\Service\Attribute\Required;
  */
 trait AdminControllerActionTrait
 {
+    // @todo: развязать эту связь с App!
     protected ActionsSubscriber $actions;
 
     #[Required]

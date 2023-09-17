@@ -97,6 +97,31 @@ trait AdminControllerIndexTrait
     }
 
     /**
+     * Статусы бизнес-процесса.
+     * Каждый статус - это сервис.
+     * Нужны для отображения в таблице сущностей.
+     *
+     * @todo: это всё делать iterable
+     *
+     * @return TableButton[]
+     */
+    protected function getIndexStatuses(): array
+    {
+        $statuses = [];
+
+        if (is_subclass_of(static::getEntityClass(), WorkflowEntityInterface::class)) {
+            /** @var WorkflowEntityInterface $entityClass */
+            $entityClass = static::getEntityClass();
+            foreach ($entityClass::getWorkflow()->getAvailableStatuses() as $status) {
+                $statuses[$status->class]['title'] = $status->title;
+                $statuses[$status->class]['service'] = $this->actions->get($status->class);
+            }
+        }
+
+        return $statuses;
+    }
+
+    /**
      * Кнопки, которые будут рядом с сущностью в таблице.
      *
      * @todo: это всё делать iterable
@@ -252,6 +277,9 @@ trait AdminControllerIndexTrait
             'actions' => [
                 'table' => $this->getIndexTableActions(),
                 'entity' => $this->getIndexEntityActions(),
+            ],
+            'statuses' => [
+                $this->getIndexStatuses(),
             ],
             'fields' => $this->getIndexFields(),
             'pages' => [
