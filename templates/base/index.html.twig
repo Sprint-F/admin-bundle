@@ -52,11 +52,17 @@
                     <thead class="thead-light">
                     <tr>
                         {% for field in fields %}
-                            <th class="border-0{% if loop.first %} rounded-start{% endif %}{% if loop.last %} rounded-end{% endif %}">
+                            <th class="border-0{% if loop.first %} rounded-start{% endif %}{% if loop.last %} rounded-end{% endif %}" rowspan="2">
                                 {{ field.label|trans }}
                             </th>
                         {% endfor %}
-                        <th></th>
+                        <th>Статусы</th>
+                        <th rowspan="2"></th>
+                    </tr>
+                    <tr>
+                        {% for status in statuses %}
+                            <th>{{ status.title }}</th>
+                        {% endfor %}
                     </tr>
                     </thead>
                     <tbody>
