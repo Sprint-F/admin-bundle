@@ -278,9 +278,7 @@ trait AdminControllerIndexTrait
                 'table' => $this->getIndexTableActions(),
                 'entity' => $this->getIndexEntityActions(),
             ],
-            'statuses' => [
-                $this->getIndexStatuses(),
-            ],
+            'statuses' => $this->getIndexStatuses(),
             'fields' => $this->getIndexFields(),
             'pages' => [
                 'num' => $page,

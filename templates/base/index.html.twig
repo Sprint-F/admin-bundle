@@ -52,32 +52,37 @@
                     <thead class="thead-light">
                     <tr>
                         {% for field in fields %}
-                            <th class="border-0{% if loop.first %} rounded-start{% endif %}{% if loop.last %} rounded-end{% endif %}" rowspan="2">
+                            <th class="border-0{% if loop.first %} rounded-start{% endif %}{% if loop.last %} rounded-end{% endif %}"{% if statuses %} rowspan="2"{% endif %}>
                                 {{ field.label|trans }}
                             </th>
                         {% endfor %}
-                        <th>Статусы</th>
-                        <th rowspan="2"></th>
+                        {% if statuses %}<th colspan="{{ statuses|count }}">Статусы</th>{% endif %}
+                        <th{% if statuses %} rowspan="2"{% endif %}></th>
                     </tr>
-                    <tr>
-                        {% for status in statuses %}
-                            <th>{{ status.title }}</th>
-                        {% endfor %}
-                    </tr>
+                    {% if statuses %}
+                        <tr>
+                            {% for status in statuses %}
+                                <th style="writing-mode: vertical-lr">{{ status.title }}</th>
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
                     </thead>
                     <tbody>
                     {% for entity in entities.data %}
-                    <tr>
-                        {% for field in fields %}
-                            <td>{{ field.renderAsLabel(entity)|raw }}</td>
-                        {% endfor %}
-                        <td style="text-align: right">
-                            <div class="btn-group" role="group">
-                                {{ macro.entity_buttons(buttons.entity, entity) }}
-                                {{ macro.entity_actions(actions.entity, entity) }}
-                            </div>
-                        </td>
-                    </tr>
+                        <tr>
+                            {% for field in fields %}
+                                <td>{{ field.renderAsLabel(entity)|raw }}</td>
+                            {% endfor %}
+                            {% for status in statuses %}
+                                <td>{{  status.service.setEntity(entity).get() ? '+' : '-' }}</td>
+                            {% endfor %}
+                            <td style="text-align: right">
+                                <div class="btn-group" role="group">
+                                    {{ macro.entity_buttons(buttons.entity, entity) }}
+                                    {{ macro.entity_actions(actions.entity, entity) }}
+                                </div>
+                            </td>
+                        </tr>
                     {% endfor %}
                     </tbody>
                 </table>
