@@ -16,7 +16,6 @@
     "homepage": "https://sprintf.ru",
     "require": {
         "php": "^8.1",
-        "symfony/symfony": "*",
         "sprintf/workflow-bundle": "*",
         "symfony/service-contracts": "*",
         "symfony/form": "*",
