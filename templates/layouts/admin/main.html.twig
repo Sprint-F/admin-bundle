@@ -326,7 +326,10 @@
 <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
     tinymce.init({
-        selector: '.editor'
+        selector: '.editor',
+        plugins: ['link', 'image', 'lists'],
+        toolbar: 'undo redo | styles | bold italic | alignleft aligncenter alignright alignjustify | ' +
+            'bullist numlist outdent indent | link image',
     });
 </script>
 
