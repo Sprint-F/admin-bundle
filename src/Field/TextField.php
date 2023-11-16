@@ -10,12 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
  */
 class TextField extends EntityField
 {
-    public const FORM_TYPE = TextareaType::class; // @todo: TextEditorType
-
-    protected function getDefaultFormOptions(): array
-    {
-        return ['attr' => ['rows' => 10]];
-    }
+    public const FORM_TYPE = TextEditorType::class;
 
     public function renderAsLabel(object $entity): string
     {
