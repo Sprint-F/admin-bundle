@@ -323,6 +323,7 @@
 <!-- Volt JS -->
 <script src="{{ asset('bundles/sprintfadmin/assets/js/volt.js') }}"></script>
 
+{% block editor %}
 <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
     tinymce.init({
@@ -332,6 +333,7 @@
             'bullist numlist outdent indent | link image',
     });
 </script>
+{% endblock %}
 
 </body>
 
