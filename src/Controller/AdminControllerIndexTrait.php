@@ -2,6 +2,8 @@
 
 namespace SprintF\Bundle\Admin\Controller;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use SprintF\Bundle\Admin\Attribute\EntityLabel;
@@ -248,7 +250,7 @@ trait AdminControllerIndexTrait
         foreach ($this->getIndexQBFilters() as $filter) {
             $qb->andWhere($filter);
         }
-        $qb->setParameters($this->getIndexQBParameters());
+        $qb->setParameters(new ArrayCollection(array_map(fn($k, $v) => new Parameter($k, $v), $this->getIndexQBParameters())));
 
         return $qb;
     }
