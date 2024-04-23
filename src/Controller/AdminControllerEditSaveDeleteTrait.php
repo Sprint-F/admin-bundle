@@ -170,7 +170,9 @@ trait AdminControllerEditSaveDeleteTrait
             try {
                 $this->eh->saveEntity($entity);
             } catch (DriverException $e) {
-                $this->addFlash('error', 'Ошибка сохранения данных: '. $e->getMessage());
+                $this->addFlash('error', 'Ошибка сохранения данных: '.$e->getMessage());
+
+                return new RedirectResponse($this->getEditRoute().'?id='.$entity->getId());
             }
         }
 
