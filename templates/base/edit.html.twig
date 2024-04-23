@@ -21,6 +21,12 @@
 
 {% block content %}
 
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
 
