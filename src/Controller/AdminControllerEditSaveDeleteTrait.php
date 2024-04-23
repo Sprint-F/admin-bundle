@@ -2,7 +2,6 @@
 
 namespace SprintF\Bundle\Admin\Controller;
 
-use Doctrine\DBAL\Exception\DriverException;
 use SprintF\Bundle\Admin\Field\EntityField;
 use SprintF\Bundle\Admin\Field\FileField;
 use SprintF\Bundle\Admin\Form\Type\FileUploadType;
@@ -169,8 +168,8 @@ trait AdminControllerEditSaveDeleteTrait
 
             try {
                 $this->eh->saveEntity($entity);
-            } catch (DriverException $e) {
-                $this->addFlash('error', 'Ошибка сохранения данных: '.$e->getMessage());
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Ошибка сохранения данных: '.get_class($e).' - '.$e->getMessage());
 
                 return new RedirectResponse($this->getEditRoute().'?id='.$entity->getId());
             }
