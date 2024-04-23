@@ -166,7 +166,13 @@ trait AdminControllerEditSaveDeleteTrait
                 }
             }
 
-            $this->eh->saveEntity($entity);
+            try {
+                $this->eh->saveEntity($entity);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Ошибка сохранения данных: '.get_class($e).' - '.$e->getMessage());
+
+                return new RedirectResponse($this->getEditRoute().'?id='.$entity->getId());
+            }
         }
 
         return new RedirectResponse($this->getIndexRoute());
