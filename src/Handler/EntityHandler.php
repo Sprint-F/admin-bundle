@@ -191,7 +191,7 @@ class EntityHandler
                     case !empty($adminFieldAttribute->class):
                         $fieldClass = $adminFieldAttribute->class;
                         break;
-                    case is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class):
+                    case ($property->getType() instanceof \ReflectionNamedType) && is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class):
                         $fieldClass = EnumField::class;
                         break;
                     default:
@@ -200,7 +200,7 @@ class EntityHandler
 
                 // Определяем класс поля формы Symfony
                 switch (true) {
-                    case is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class):
+                    case ($property->getType() instanceof \ReflectionNamedType) && is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class):
                         $formType = EnumType::class;
                         break;
                     default:
@@ -211,7 +211,7 @@ class EntityHandler
                 if (is_a($formType, CheckboxType::class, true)) {
                     $formOptions['required'] = false;
                 }
-                if (is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class) && enum_exists($property->getType()?->getName())) {
+                if (($property->getType() instanceof \ReflectionNamedType) && is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class) && enum_exists($property->getType()?->getName())) {
                     $enumType = $property->getType()?->getName();
                     $formOptions['class'] = $enumType;
                     $formOptions['choice_label'] = function ($choice, $key, $value) {
