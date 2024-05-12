@@ -19,12 +19,14 @@ use SprintF\Bundle\Admin\Field\DateField;
 use SprintF\Bundle\Admin\Field\DateTimeField;
 use SprintF\Bundle\Admin\Field\EntityField;
 use SprintF\Bundle\Admin\Field\EnumField;
+use SprintF\Bundle\Admin\Field\FieldNeedAppParamsInterface;
 use SprintF\Bundle\Admin\Field\HasManyField;
 use SprintF\Bundle\Admin\Field\HasOneField;
 use SprintF\Bundle\Admin\Field\JsonField;
 use SprintF\Bundle\Admin\Field\TextField;
 use SprintF\Bundle\Admin\Form\Type\SelectEntityType;
 use SprintF\Bundle\Workflow\WorkflowEntityInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Contracts\Service\Attribute\Required;
@@ -35,11 +37,18 @@ use Symfony\Contracts\Service\Attribute\Required;
 class EntityHandler
 {
     protected EntityManagerInterface $em;
+    protected ContainerBagInterface $params;
 
     #[Required]
     public function setEntityManager(EntityManagerInterface $entityManager)
     {
         $this->em = $entityManager;
+    }
+
+    #[Required]
+    public function setParams(ContainerBagInterface $params)
+    {
+        $this->params = $params;
     }
 
     /**
@@ -229,6 +238,9 @@ class EntityHandler
                     formOptions: $formOptions,
                     primary: $isPrimary,
                 );
+                if ($fields[$property->getName()] instanceof FieldNeedAppParamsInterface) {
+                    $fields[$property->getName()]->setAppParams($this->params);
+                }
 
                 if (!empty($adminFieldAttribute->uploadPath)) {
                     $fields[$property->getName()]->uploadPath = $adminFieldAttribute->uploadPath;
@@ -281,13 +293,19 @@ class EntityHandler
         $adminFieldAttribute = $adminFieldAttributes[0]->newInstance();
         $label = $adminFieldAttribute->getLabel();
 
-        return new HasOneField(
+        $field = new HasOneField(
             name: $property->getName(),
             label: $label,
             formType: SelectEntityType::class,
             formOptions: ['required' => !$property->getType()?->allowsNull(), 'class' => $targetEntity],
             primary: false,
         );
+
+        if ($field instanceof FieldNeedAppParamsInterface) {
+            $field->setAppParams($this->params);
+        }
+
+        return $field;
     }
 
     /**
@@ -306,12 +324,18 @@ class EntityHandler
         $adminFieldAttribute = $adminFieldAttributes[0]->newInstance();
         $label = $adminFieldAttribute->getLabel();
 
-        return new HasManyField(
+        $field =  new HasManyField(
             name: $property->getName(),
             label: $label,
             formType: SelectEntityType::class,
             formOptions: ['multiple' => true, 'required' => false, 'class' => $targetEntity],
             primary: false,
         );
+
+        if ($field instanceof FieldNeedAppParamsInterface) {
+            $field->setAppParams($this->params);
+        }
+
+        return $field;
     }
 }

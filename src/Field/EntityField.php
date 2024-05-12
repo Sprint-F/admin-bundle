@@ -2,6 +2,7 @@
 
 namespace SprintF\Bundle\Admin\Field;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -13,6 +14,8 @@ use Symfony\Component\Translation\TranslatableMessage;
 class EntityField
 {
     public const FORM_TYPE = TextType::class;
+
+    protected ContainerBagInterface $appParams;
 
     public function __construct(
         /** Имя поля в сущности */
@@ -27,6 +30,24 @@ class EntityField
         public bool $primary = false,
     ) {
         $this->formOptions = array_merge($this->getDefaultFormOptions(), $this->formOptions);
+    }
+
+    /**
+     * @implements FieldNeedAppParamsInterface
+     */
+    public function setAppParams(ContainerBagInterface $appParams)
+    {
+        $this->appParams = $appParams;
+
+        return $this;
+    }
+
+    /**
+     * @implements FieldNeedAppParamsInterface
+     */
+    public function getAppParams(): ContainerBagInterface
+    {
+        return $this->appParams;
     }
 
     /**
