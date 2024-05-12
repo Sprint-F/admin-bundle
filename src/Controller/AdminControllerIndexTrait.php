@@ -250,7 +250,13 @@ trait AdminControllerIndexTrait
         foreach ($this->getIndexQBFilters() as $filter) {
             $qb->andWhere($filter);
         }
-        $qb->setParameters(new ArrayCollection(array_map(fn($k, $v) => new Parameter($k, $v), $this->getIndexQBParameters())));
+        $qb->setParameters(new ArrayCollection(
+            array_map(
+                fn($k, $v) => new Parameter($k, $v),
+                array_keys($this->getIndexQBParameters()),
+                array_values($this->getIndexQBParameters())
+            )
+        ));
 
         return $qb;
     }
