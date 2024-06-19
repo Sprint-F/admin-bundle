@@ -2,7 +2,7 @@
 
 namespace SprintF\Bundle\Admin\Button;
 
-use SprintF\Bundle\Workflow\WorkflowEntityInterface;
+use SprintF\Bundle\Workflow\Entity\WorkflowEntityInterface;
 
 /**
  * Кнопка какого-либо действия, отображающаяся рядом с сущностью.

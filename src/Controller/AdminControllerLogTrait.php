@@ -5,7 +5,7 @@ namespace SprintF\Bundle\Admin\Controller;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use SprintF\Bundle\Admin\Field\EntityField;
-use SprintF\Bundle\Workflow\WorkflowEntityInterface;
+use SprintF\Bundle\Workflow\Entity\WorkflowEntityInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 

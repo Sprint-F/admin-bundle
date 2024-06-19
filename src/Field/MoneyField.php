@@ -15,6 +15,6 @@ class MoneyField extends EntityField implements FieldNeedAppParamsInterface
             return '-';
         }
 
-        return $value.'&nbsp;' . ($this->getAppParams()->has('app.currency.symbol') ?  $this->getAppParams()->get('app.currency.symbol') : '¤');
+        return $value.'&nbsp;'.($this->getAppParams()->has('app.currency.symbol') ? $this->getAppParams()->get('app.currency.symbol') : '¤');
     }
 }

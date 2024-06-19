@@ -25,7 +25,7 @@ use SprintF\Bundle\Admin\Field\HasOneField;
 use SprintF\Bundle\Admin\Field\JsonField;
 use SprintF\Bundle\Admin\Field\TextField;
 use SprintF\Bundle\Admin\Form\Type\SelectEntityType;
-use SprintF\Bundle\Workflow\WorkflowEntityInterface;
+use SprintF\Bundle\Workflow\Entity\WorkflowEntityInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
@@ -324,7 +324,7 @@ class EntityHandler
         $adminFieldAttribute = $adminFieldAttributes[0]->newInstance();
         $label = $adminFieldAttribute->getLabel();
 
-        $field =  new HasManyField(
+        $field = new HasManyField(
             name: $property->getName(),
             label: $label,
             formType: SelectEntityType::class,

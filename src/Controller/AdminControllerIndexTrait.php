@@ -10,7 +10,7 @@ use SprintF\Bundle\Admin\Attribute\EntityLabel;
 use SprintF\Bundle\Admin\Button\EntityButton;
 use SprintF\Bundle\Admin\Button\TableButton;
 use SprintF\Bundle\Admin\Field\EntityField;
-use SprintF\Bundle\Workflow\WorkflowEntityInterface;
+use SprintF\Bundle\Workflow\Entity\WorkflowEntityInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -170,7 +170,7 @@ trait AdminControllerIndexTrait
         $buttons = [];
 
         if (is_subclass_of(static::getEntityClass(), WorkflowEntityInterface::class)) {
-            /** @var \SprintF\Bundle\Workflow\WorkflowEntityInterface $entityClass */
+            /** @var WorkflowEntityInterface $entityClass */
             $entityClass = static::getEntityClass();
             foreach ($entityClass::getWorkflow()->getAvailableForExistingEntitiesActions() as $action) {
                 $buttons[$action->class] = function (WorkflowEntityInterface $entity) use ($action) {
@@ -252,7 +252,7 @@ trait AdminControllerIndexTrait
         }
         $qb->setParameters(new ArrayCollection(
             array_map(
-                fn($k, $v) => new Parameter($k, $v),
+                fn ($k, $v) => new Parameter($k, $v),
                 array_keys($this->getIndexQBParameters()),
                 array_values($this->getIndexQBParameters())
             )

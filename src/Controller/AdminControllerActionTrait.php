@@ -3,10 +3,10 @@
 namespace SprintF\Bundle\Admin\Controller;
 
 use App\Workflow\ActionsSubscriber;
-use SprintF\Bundle\Workflow\ActionAbstract;
+use SprintF\Bundle\Workflow\Action\ActionAbstract;
+use SprintF\Bundle\Workflow\Entity\WorkflowEntityInterface;
 use SprintF\Bundle\Workflow\Exception\CanNotException;
 use SprintF\Bundle\Workflow\Exception\FailException;
-use SprintF\Bundle\Workflow\WorkflowEntityInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -63,7 +63,7 @@ trait AdminControllerActionTrait
      * Подготовка данных для формы действия бизнес-процесса.
      * По умолчанию форма создается без заранее заполненных данных.
      */
-    protected function getDataForActionForm(string $actionClass, WorkflowEntityInterface $entity = null): ?array
+    protected function getDataForActionForm(string $actionClass, ?WorkflowEntityInterface $entity = null): ?array
     {
         return null;
     }
@@ -72,7 +72,7 @@ trait AdminControllerActionTrait
      * Создание формы для действия бизнес-процесса.
      * Применимо, если сущность имеет связанный с ней бизнес-процесс.
      */
-    protected function getActionForm(string $actionClass, WorkflowEntityInterface $entity = null): FormInterface
+    protected function getActionForm(string $actionClass, ?WorkflowEntityInterface $entity = null): FormInterface
     {
         /** @var WorkflowEntityInterface $entityClass */
         $entityClass = static::getEntityClass();
@@ -133,7 +133,7 @@ trait AdminControllerActionTrait
      */
     public function do(Request $request): Response
     {
-        /** @var \SprintF\Bundle\Workflow\WorkflowEntityInterface $entityClass */
+        /** @var WorkflowEntityInterface $entityClass */
         $entityClass = static::getEntityClass();
         if (!is_subclass_of($entityClass, WorkflowEntityInterface::class)) {
             throw new \Exception('Сущность не имеет связанного с ней бизнес-процесса');

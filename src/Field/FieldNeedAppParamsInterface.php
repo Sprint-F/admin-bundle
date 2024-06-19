@@ -7,12 +7,12 @@ use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 interface FieldNeedAppParamsInterface
 {
     /**
-     * Метод, который может вызываться для передачи объекту представления поля сущностей параметров приложения
+     * Метод, который может вызываться для передачи объекту представления поля сущностей параметров приложения.
      */
     public function setAppParams(ContainerBagInterface $appParams);
 
     /**
-     * Метод получения ранее переданных параметров приложения
+     * Метод получения ранее переданных параметров приложения.
      */
     public function getAppParams(): ContainerBagInterface;
 }

@@ -3,7 +3,6 @@
 namespace SprintF\Bundle\Admin\Field;
 
 use SprintF\Bundle\Admin\Form\Type\TextEditorType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
 /**
  * Представление поля типа "text".
