@@ -88,9 +88,11 @@
 {% macro entity_buttons(items, entity) %}
     {% for buttonF in items %}
         {% set button = call(buttonF, entity) %}
+        {% if button %}
         <a class="btn btn-sm btn-icon-only btn-primary" href="{{ button.url }}" {% if button.onclick %}onclick='{{ (button.onclick ?? '')|raw }}'{% endif %}>
             {{ (button.icon ?? '')|raw }} {{ button.label }}
         </a>
+        {% endif %}
     {% endfor %}
 {% endmacro %}
 
@@ -103,8 +105,10 @@
             <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-start">
                 {% for actionF in items %}
                     {% set button = call(actionF, entity) %}
-                    {% if button.visible(entity) %}
-                    <li><a class="dropdown-item" href="{{ button.url }}">{{ (button.icon ?? '')|raw }} {{ button.label }}</a></li>
+                    {% if button %}
+                        {% if button.visible(entity) %}
+                        <li><a class="dropdown-item" href="{{ button.url }}">{{ (button.icon ?? '')|raw }} {{ button.label }}</a></li>
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
             </ul>

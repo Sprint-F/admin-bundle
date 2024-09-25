@@ -80,6 +80,7 @@ trait AdminControllerEditSaveDeleteTrait
     {
         $formBuilder = $this->createFormBuilder($entity);
         foreach ($this->getEditFields($entity) as $field) {
+            /** @var EntityField $field */
             if ($field->primary) {
                 $formBuilder->add($field->name, HiddenType::class, $field->formOptions);
             } else {
