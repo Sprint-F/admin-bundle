@@ -5,6 +5,7 @@ namespace SprintF\Bundle\Admin\Controller;
 use SprintF\Bundle\Admin\Field\EntityField;
 use SprintF\Bundle\Admin\Field\FileField;
 use SprintF\Bundle\Admin\Form\Type\FileUploadType;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -74,6 +75,23 @@ trait AdminControllerEditSaveDeleteTrait
     }
 
     /**
+     * Класс для формы редактирования сущности
+     */
+    protected function getEditFormTypeClass(): string
+    {
+        return FormType::class;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function createFormBuilder(mixed $data = null, array $options = []): FormBuilderInterface
+    {
+        return $this->container->get('form.factory')->createBuilder($this->getEditFormTypeClass(), $data, $options);
+    }
+
+
+    /**
      * Создание форм-билдера для формы добавления и редактирования сущности.
      */
     protected function getEditFormBuilder(object $entity, FormBuilderScenario $scenario = FormBuilderScenario::EDIT): FormBuilderInterface
@@ -115,11 +133,12 @@ trait AdminControllerEditSaveDeleteTrait
         $formBuilder->setAction($this->getSaveRoute());
 
         return $this->render($this->getEditViewPath(), [
-            'isNew' => 'new' === $id,
             'route' => $this->getIndexRoute(),
+            'entity' => $entity,
+            'isNew' => 'new' === $id,
             'label' => $this->eh->getEntityLabel(static::getEntityClass()),
             'fields' => $this->getEditFields(),
-            'form' => $formBuilder->getForm()->createView(),
+            'form' => $formBuilder->getForm(),
         ]);
     }
 
