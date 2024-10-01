@@ -11,6 +11,9 @@ use SprintF\Bundle\Admin\Button\EntityButton;
 use SprintF\Bundle\Admin\Button\TableButton;
 use SprintF\Bundle\Admin\Field\EntityField;
 use SprintF\Bundle\Workflow\WorkflowEntityInterface;
+use Symfony\Component\Form\Extension\Core\Type\ResetType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,9 +23,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 trait AdminControllerIndexTrait
 {
-    protected array $indexQBFilters = [];
-    protected array $indexQBParameters = [];
-
     protected array $indexTemplateParameters = [];
 
     /**
@@ -44,6 +44,11 @@ trait AdminControllerIndexTrait
     protected function getIndexFields(): array
     {
         return $this->eh->getFields(static::getEntityClass());
+    }
+
+    protected function getFormFilters(): array
+    {
+        return [];
     }
 
     /**
@@ -197,36 +202,6 @@ trait AdminControllerIndexTrait
     }
 
     /**
-     * Список дополнительных условий-фильтров для основного QueryBuilder.
-     */
-    protected function getIndexQBFilters(): array
-    {
-        return $this->indexQBFilters;
-    }
-
-    protected function addIndexQBFilter(string $filter): static
-    {
-        $this->indexQBFilters[] = $filter;
-
-        return $this;
-    }
-
-    /**
-     * Список параметров к условиям-фильтрам
-     */
-    protected function getIndexQBParameters(): array
-    {
-        return $this->indexQBParameters;
-    }
-
-    protected function addIndexQBParameters(array $parameters): static
-    {
-        $this->indexQBParameters = array_merge($this->indexQBParameters, $parameters);
-
-        return $this;
-    }
-
-    /**
      * Список дополнительных параметров, которые будут переданы в шаблон.
      */
     protected function getIndexTemplateParameters(): array
@@ -244,15 +219,44 @@ trait AdminControllerIndexTrait
     /**
      * QueryBuilder, готовящий запрос на получение списка сущностей на главной странице раздела.
      */
-    protected function getIndexQueryBuilder(): QueryBuilder
+    protected function getIndexQueryBuilder(Request $request): QueryBuilder
     {
         $qb = $this->eh->getEntityFindAllQuery(static::getEntityClass());
-        foreach ($this->getIndexQBFilters() as $filter) {
-            $qb->andWhere($filter);
+
+        foreach ($this->getFormFilters() as $filter) {
+            $qb = $filter->modifyQueryBuilder($qb, $request);
         }
-        $qb->setParameters(new ArrayCollection(array_map(fn($k, $v) => new Parameter($k, $v), $this->getIndexQBParameters())));
 
         return $qb;
+    }
+
+    protected function getFilterFormBuilder(Request $request): FormBuilderInterface
+    {
+        $formBuilder = $this->createFormBuilder($this->getFilterFormData($request), [
+            'method' => 'GET',
+            'attr' => [
+                'class' => 'form-inline',
+            ],
+        ]);
+
+        foreach ($this->getFormFilters() as $filter) {
+            $formBuilder = $filter->modifyFormBuilder($formBuilder, $request);
+        }
+
+        $formBuilder
+            ->add('Search', SubmitType::class, [
+                'row_attr' => [
+                    'class' => 'form-group mb-3',
+                ],
+            ])
+            ->add('Clear', SubmitType::class, [
+                'row_attr' => [
+                    'class' => 'form-group mb-3',
+                ],
+            ])
+        ;
+
+        return $formBuilder;
     }
 
     /**
@@ -261,7 +265,7 @@ trait AdminControllerIndexTrait
     public function index(Request $request): Response
     {
         $page = $request->get('page', 1);
-        $qb = $this->getIndexQueryBuilder();
+        $qb = $this->getIndexQueryBuilder($request);
         $qb
             ->setFirstResult(($page - 1) * static::ENTITITES_PER_PAGE)
             ->setMaxResults(static::ENTITITES_PER_PAGE);
@@ -272,6 +276,7 @@ trait AdminControllerIndexTrait
         return $this->render($this->getIndexViewPath(), array_merge($this->getIndexTemplateParameters(), [
             'route' => $this->getIndexRoute(),
             'label' => $this->eh->getEntityLabel(static::getEntityClass()),
+            'filters' => $this->getFilterFormBuilder($request)->getForm()->createView(),
             'buttons' => [
                 'table' => $this->getIndexTableButtons($this->eh->getEntityLabel(static::getEntityClass())),
                 'entity' => $this->getIndexEntityButtons(),
@@ -291,5 +296,15 @@ trait AdminControllerIndexTrait
                 'data' => $paginator->getIterator(),
             ],
         ]));
+    }
+
+    private function getFilterFormData(Request $request)
+    {
+        $form = $request->get('form');
+        if (isset($form['Clear'])) {
+            return [];
+        }
+
+        return $form;
     }
 }
