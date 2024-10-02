@@ -103,12 +103,8 @@
             <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-start">
                 {% for actionF in items %}
                     {% set button = call(actionF, entity) %}
-                    {% if button %}
-                        {% if button.visible(entity) %}
-                            <li><a class="dropdown-item" href="{{ button.url }}">{{ (button.icon ?? '')|raw }} {{ button.label }}</a></li>
-                        {% endif %}
-                            <li><a class="dropdown-item" href="{{ button.url }}">{{ (button.icon ?? '')|raw }} {{ button.label }}</a></li>
-                        {% endif %}
+                    {% if button.visible(entity) %}
+                        <li><a class="dropdown-item" href="{{ button.url }}">{{ (button.icon ?? '')|raw }} {{ button.label }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
