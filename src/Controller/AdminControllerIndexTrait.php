@@ -234,9 +234,6 @@ trait AdminControllerIndexTrait
     {
         $formBuilder = $this->createFormBuilder($this->getFilterFormData($request), [
             'method' => 'GET',
-            'attr' => [
-                'class' => 'form-inline',
-            ],
         ]);
 
         foreach ($this->getFormFilters() as $filter) {
@@ -244,16 +241,8 @@ trait AdminControllerIndexTrait
         }
 
         $formBuilder
-            ->add('Search', SubmitType::class, [
-                'row_attr' => [
-                    'class' => 'form-group mb-3',
-                ],
-            ])
-            ->add('Clear', SubmitType::class, [
-                'row_attr' => [
-                    'class' => 'form-group mb-3',
-                ],
-            ])
+            ->add('Search', SubmitType::class)
+            ->add('Clear', SubmitType::class)
         ;
 
         return $formBuilder;
