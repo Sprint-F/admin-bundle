@@ -10,7 +10,16 @@ use SprintF\Bundle\Admin\Attribute\EntityLabel;
 use SprintF\Bundle\Admin\Button\EntityButton;
 use SprintF\Bundle\Admin\Button\TableButton;
 use SprintF\Bundle\Admin\Field\EntityField;
+use SprintF\Bundle\Admin\Filter\FilterAbstract;
+use SprintF\Bundle\Admin\Form\Type\FileUploadType;
 use SprintF\Bundle\Workflow\Entity\WorkflowEntityInterface;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\ResetType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,9 +29,9 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 trait AdminControllerIndexTrait
 {
-    protected array $indexQBFilters = [];
-    protected array $indexQBParameters = [];
-
+    /**
+     * Список дополнительных параметров, которые будут переданы в шаблон.
+     */
     protected array $indexTemplateParameters = [];
 
     /**
@@ -197,33 +206,47 @@ trait AdminControllerIndexTrait
     }
 
     /**
-     * Список дополнительных условий-фильтров для основного QueryBuilder.
+     * Список фильтров для страницы. 
+     * 
+     * @return FilterAbstract[]
      */
-    protected function getIndexQBFilters(): array
+    protected function getIndexFilters(): array
     {
-        return $this->indexQBFilters;
-    }
-
-    protected function addIndexQBFilter(string $filter): static
-    {
-        $this->indexQBFilters[] = $filter;
-
-        return $this;
+        return [];
     }
 
     /**
-     * Список параметров к условиям-фильтрам
+     * Класс для формы отображения фильтров.
      */
-    protected function getIndexQBParameters(): array
+    protected function getIndexFiltersFormTypeClass(): string
     {
-        return $this->indexQBParameters;
+        return FormType::class;
     }
 
-    protected function addIndexQBParameters(array $parameters): static
+    /**
+     * Конструктор формы отображения фильтров.
+     */
+    protected function createIndexFiltersFormBuilder(mixed $data = null, array $options = []): FormBuilderInterface
     {
-        $this->indexQBParameters = array_merge($this->indexQBParameters, $parameters);
+        /** @var FormFactoryInterface $factory */
+        $factory = $this->container->get('form.factory');
+        return $factory->createNamedBuilder('filters', $this->getIndexFiltersFormTypeClass(), $data, $options);
+    }
 
-        return $this;
+    /**
+     * Создание форм-билдера для формы отображения фильтров.
+     */
+    protected function getIndexFiltersFormBuilder(Request $request): FormBuilderInterface
+    {
+        $formBuilder = $this->createIndexFiltersFormBuilder();
+        $formBuilder->setMethod('GET');
+        foreach ($this->getIndexFilters() as $filter) {
+            $formBuilder = $filter->modifyFormBuilder($formBuilder, $request);
+        }
+        $formBuilder->add('__submit', SubmitType::class, ['label' => 'Поиск']);
+        $formBuilder->add('__clear', SubmitType::class, ['label' => 'Сброс']);
+
+        return $formBuilder;
     }
 
     /**
@@ -247,16 +270,6 @@ trait AdminControllerIndexTrait
     protected function getIndexQueryBuilder(): QueryBuilder
     {
         $qb = $this->eh->getEntityFindAllQuery(static::getEntityClass());
-        foreach ($this->getIndexQBFilters() as $filter) {
-            $qb->andWhere($filter);
-        }
-        $qb->setParameters(new ArrayCollection(
-            array_map(
-                fn ($k, $v) => new Parameter($k, $v),
-                array_keys($this->getIndexQBParameters()),
-                array_values($this->getIndexQBParameters())
-            )
-        ));
 
         return $qb;
     }
@@ -268,10 +281,29 @@ trait AdminControllerIndexTrait
     {
         $page = $request->get('page', 1);
         $qb = $this->getIndexQueryBuilder();
+
+        $filtersFormBuilder = $this->getIndexFiltersFormBuilder($request);
+
+        $filtersForm = $filtersFormBuilder->getForm();
+        $filtersForm->handleRequest($request);
+        if ($filtersForm->isSubmitted()) { // Тут мы осознанно забиваем на isValid, поскольку нам не нужна защита CSRF
+            $filtersData = $filtersForm->getData();
+            if ($filtersForm->get('__clear')->isClicked()) {
+                return new RedirectResponse($this->getIndexRoute());
+            }
+            foreach ($this->getIndexFilters() as $filter) {
+                $qb = $filter->modifyQueryBuilder($qb, $filtersData);
+            }
+        }
+
+        $baseUrl = $this->getIndexRoute();
+        if (!empty($filtersData)) {
+            $baseUrl .= '?' . http_build_query(['filters' => $filtersData]);
+        }
+
         $qb
             ->setFirstResult(($page - 1) * static::ENTITITES_PER_PAGE)
             ->setMaxResults(static::ENTITITES_PER_PAGE);
-
         $paginator = new Paginator($qb, true);
         $total = $paginator->count();
 
@@ -288,6 +320,11 @@ trait AdminControllerIndexTrait
             ],
             'statuses' => $this->getIndexStatuses(),
             'fields' => $this->getIndexFields(),
+            'filters' => [
+                'form' => $filtersForm->createView(),
+                'data' => $filtersData ?? [],
+                'route' => $baseUrl,
+            ],
             'pages' => [
                 'num' => $page,
                 'total' => (int) ceil($total / static::ENTITITES_PER_PAGE),

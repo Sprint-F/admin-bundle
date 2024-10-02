@@ -17,10 +17,10 @@
         <ul class="pagination mb-0">
             {% if 1 != num %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ route }}?page=1">&lt;&lt;</a>
+                    <a class="page-link" href="{{ route }}{% if '?' in route %}&{% else %}?{% endif %}page=1">&lt;&lt;</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="{{ route }}?page={{ num-1 }}">&lt;</a>
+                    <a class="page-link" href="{{ route }}{% if '?' in route %}&{% else %}?{% endif %}page={{ num-1 }}">&lt;</a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
@@ -33,7 +33,7 @@
             {% for part in parts %}
                 {% for page in part %}
                     <li class="page-item{% if num==page %} active{% endif %}">
-                        <a class="page-link" href="{{ route }}?page={{ page }}">{{ page }}</a>
+                        <a class="page-link" href="{{ route }}{% if '?' in route %}&{% else %}?{% endif %}page={{ page }}">{{ page }}</a>
                     </li>
                 {% endfor %}
                 {% if not loop.last %}
@@ -44,10 +44,10 @@
             {% endfor %}
             {% if total != num %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ route }}?page={{ num+1 }}">&gt;</a>
+                    <a class="page-link" href="{{ route }}{% if '?' in route %}&{% else %}?{% endif %}page={{ num+1 }}">&gt;</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="{{ route }}?page={{ total }}">&gt;&gt;</a>
+                    <a class="page-link" href="{{ route }}{% if '?' in route %}&{% else %}?{% endif %}page={{ total }}">&gt;&gt;</a>
                 </li>
             {% else %}
                 <li class="page-item disabled">

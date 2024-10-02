@@ -39,12 +39,39 @@
 
     <div class="card border-0 shadow mb-4">
         <div class="card-body p-0">
-            <div class="row p-4">
+
+            {# Панель фильтров показываем, только если они есть в форме фильтров #}
+            {% if filters.form|count > 3 %}
+            <div class="row px-4 py-2">
+
+                {% form_theme filters.form with 'bootstrap_5_horizontal_layout.html.twig' only %}
+                {{ form_start(filters.form) }}
+                <div class="row">
+                    {# form_errors(filters.form) #}
+                </div>
+                <div class="row">
+                    {% for input in filters.form %}
+                        {% if input.vars.name not in ['__submit', '__clear', '_token'] %}
+                            <div class="col-sm">
+                            {{ form_row(input) }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <div class="col-xs-6 col-sm-3 col-lg-2 mb-2 text-end">{{ form_widget(filters.form.__submit) }}</div>
+                </div>
+                <div class="row justify-content-end">
+                    <div class="col-xs-6 col-sm-3 col-lg-2 mb-2 text-end">{{ form_widget(filters.form.__clear) }}</div>
+                </div>
+                {{ form_end(filters.form) }}
+            </div>
+            {% endif %}
+
+            <div class="row px-4 py-2">
                 <p>Всего записей: {{ entities.total }}</p>
             </div>
 
-            <div class="row p-4">
-                {{ macro.pager(route, pages.total, pages.num) }}
+            <div class="row px-4 py-2">
+                {{ macro.pager(filters.route, pages.total, pages.num) }}
             </div>
 
             <div class="table-responsive mb-5">
