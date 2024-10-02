@@ -13,14 +13,18 @@
         {% set parts = [range(1, 3), range(num-1, num+1), range(total-2, total)] %}
     {% endif %}
 
+    {% set queryParams = app.request.query.all %}
+
     <nav>
         <ul class="pagination mb-0">
             {% if 1 != num %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ route }}?page=1">&lt;&lt;</a>
+                    {% set href = route ~ '?' ~ queryParams|merge({page: 1}) | url_encode %}
+                    <a class="page-link" href="{{ href }}">&lt;&lt;</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="{{ route }}?page={{ num-1 }}">&lt;</a>
+                    {% set href = route ~ '?' ~ queryParams|merge({page: num-1}) | url_encode %}
+                    <a class="page-link" href="{{ href }}">&lt;</a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
@@ -33,7 +37,8 @@
             {% for part in parts %}
                 {% for page in part %}
                     <li class="page-item{% if num==page %} active{% endif %}">
-                        <a class="page-link" href="{{ route }}?page={{ page }}">{{ page }}</a>
+                        {% set href = route ~ '?' ~ queryParams|merge({page: page}) | url_encode %}
+                        <a class="page-link" href="{{ href }}">{{ page }}</a>
                     </li>
                 {% endfor %}
                 {% if not loop.last %}
@@ -44,10 +49,12 @@
             {% endfor %}
             {% if total != num %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ route }}?page={{ num+1 }}">&gt;</a>
+                    {% set href = route ~ '?' ~ queryParams|merge({page: num+1}) | url_encode %}
+                    <a class="page-link" href="{{ href }}">&gt;</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="{{ route }}?page={{ total }}">&gt;&gt;</a>
+                    {% set href = route ~ '?' ~ queryParams|merge({page: total}) | url_encode %}
+                    <a class="page-link" href="{{ href }}">&gt;&gt;</a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
