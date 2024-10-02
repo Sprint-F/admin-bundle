@@ -2,7 +2,6 @@
 
 namespace SprintF\Bundle\Admin\Controller;
 
-use SprintF\Bundle\Admin\Form\FormFilter;
 use SprintF\Bundle\Admin\Handler\EntityHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\String\Slugger\SluggerInterface;
