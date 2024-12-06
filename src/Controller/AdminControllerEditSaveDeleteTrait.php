@@ -117,8 +117,11 @@ trait AdminControllerEditSaveDeleteTrait
     public function getEntityByRequest(Request $request): object
     {
         $id = $request->get('form') ? $request->get('form')['id'] : $request->get('id', 'new');
+        $repository = $this->eh->getEntityRepository(static::getEntityClass());
 
-        return 'new' === $id || empty($id) ? new (static::getEntityClass()) : $this->eh->getEntityRepository(static::getEntityClass())->find($id);
+        return 'new' === $id || empty($id)
+            ? (method_exists($repository, 'create') ? $repository->create() : new (static::getEntityClass()))
+            : $this->eh->getEntityRepository(static::getEntityClass())->find($id);
     }
 
     /**
