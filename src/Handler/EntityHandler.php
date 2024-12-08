@@ -12,11 +12,13 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\ORM\QueryBuilder;
 use SprintF\Bundle\Admin\Attribute\AdminField;
+use SprintF\Bundle\Admin\Attribute\AdminFieldGroup;
 use SprintF\Bundle\Admin\Attribute\EntityLabel;
 use SprintF\Bundle\Admin\Enum\EnumWithLabelInterface;
 use SprintF\Bundle\Admin\Field\BooleanField;
 use SprintF\Bundle\Admin\Field\DateField;
 use SprintF\Bundle\Admin\Field\DateTimeField;
+use SprintF\Bundle\Admin\Field\EmbeddedFields;
 use SprintF\Bundle\Admin\Field\EntityField;
 use SprintF\Bundle\Admin\Field\EnumField;
 use SprintF\Bundle\Admin\Field\FieldNeedAppParamsInterface;
@@ -170,6 +172,19 @@ class EntityHandler
         foreach ($allEntityProperties as $property) {
             // Статические свойства нас не интересуют, пропускаем
             if ($property->isStatic()) {
+                continue;
+            }
+
+            // Свойство, помеченное атрибутом AdminFieldGroup (вложенная сущность)
+            $propertyFieldGroupAttributes = $property->getAttributes(AdminFieldGroup::class);
+            if (!empty($propertyFieldGroupAttributes)) {
+                $propertyFieldGroupAttribute = $propertyFieldGroupAttributes[0]->newInstance();
+                $fields[$property->getName()] = new EmbeddedFields(
+                    name: $property->getName(),
+                    label: $propertyFieldGroupAttribute->getLabel() ?: $property->getName(),
+                    entityClass: $property->getType()->getName(),
+                    fields: $this->getFields($property->getType()->getName())
+                );
                 continue;
             }
 

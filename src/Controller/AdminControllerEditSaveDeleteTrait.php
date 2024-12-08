@@ -2,6 +2,7 @@
 
 namespace SprintF\Bundle\Admin\Controller;
 
+use SprintF\Bundle\Admin\Field\EmbeddedFields;
 use SprintF\Bundle\Admin\Field\EntityField;
 use SprintF\Bundle\Admin\Field\FileField;
 use SprintF\Bundle\Admin\Form\Type\FileUploadType;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 
 /**
  * @mixin AbstractAdminController
@@ -97,8 +99,27 @@ trait AdminControllerEditSaveDeleteTrait
     protected function getEditFormBuilder(object $entity, FormBuilderScenario $scenario = FormBuilderScenario::EDIT): FormBuilderInterface
     {
         $formBuilder = $this->createFormBuilder($entity);
-        foreach ($this->getEditFields($entity) as $field) {
+
+        $formBuilder = $this->addFieldsToFormBuilder($entity, $formBuilder, $this->getEditFields($entity), $scenario);
+        $formBuilder->add('__submit', SubmitType::class, ['label' => 'Сохранить']);
+
+        return $formBuilder;
+    }
+
+    protected function addFieldsToFormBuilder(object $entity, FormBuilderInterface $formBuilder, array $fields, FormBuilderScenario $scenario): FormBuilderInterface
+    {
+        foreach ($fields as $key => $field) {
             /** @var EntityField $field */
+            if ($field instanceof EmbeddedFields) {
+                $accessor = PropertyAccess::createPropertyAccessor();
+                $subEntity = $accessor->getValue($entity, $field->name) ?? new ($field->entityClass);
+
+                $embedded = $this->container->get('form.factory')->createNamedBuilder($field->name, $this->getEditFormTypeClass(), $subEntity, ['label' => $field->label]);
+                $embedded = $this->addFieldsToFormBuilder($subEntity, $embedded, $field->fields, $scenario);
+
+                $formBuilder->add($embedded);
+                continue;
+            }
             if ($field->primary) {
                 $formBuilder->add($field->name, HiddenType::class, $field->formOptions);
             } else {
@@ -109,7 +130,6 @@ trait AdminControllerEditSaveDeleteTrait
                 $formBuilder->add($field->name, $field->formType, array_merge($field->formOptions, $options));
             }
         }
-        $formBuilder->add('__submit', SubmitType::class, ['label' => 'Сохранить']);
 
         return $formBuilder;
     }
