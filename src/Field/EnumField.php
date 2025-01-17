@@ -26,6 +26,6 @@ class EnumField extends EntityField
     {
         $value = $this->value($entity);
 
-        return $value->label();
+        return null === $value ?  '-' : $value->label();
     }
 }
