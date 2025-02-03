@@ -19,7 +19,7 @@
         "sprintf/workflow-bundle": "^0.1.3",
         "symfony/dependency-injection": "*",
         "symfony/form": "*",
-        "symfony/routing": "^7.2",
+        "symfony/routing": "*",
         "symfony/service-contracts": "*",
         "symfony/string": "*",
         "symfony/translation": "*"
