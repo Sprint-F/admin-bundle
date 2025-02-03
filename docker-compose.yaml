@@ -1,0 +1,11 @@
+services:
+
+  php:
+    image: registry.sprintf.ru/${COMPOSE_PROJECT_NAME}/php:latest
+    build:
+      context: ./
+      dockerfile: .docker/php/Dockerfile
+      target: prod
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}

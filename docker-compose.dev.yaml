@@ -1,0 +1,19 @@
+services:
+
+  php:
+    # Когда мы работаем локально, нам нет нужды все файлы приложения передавать в контекст докера,
+    # потому что мы их смонтируем ниже в секции volume
+    build:
+      context: .docker/php
+      dockerfile: Dockerfile
+      target: dev
+    environment:
+      XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
+      PHP_IDE_CONFIG: "serverName=Docker"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/app
+      - ~/.composer:/tmp/composer
+      - ~/.ssh:/home/www-data/.ssh:ro
+      - ./.docker/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
