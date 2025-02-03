@@ -6,7 +6,7 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 /**
  * Атрибут, управляющий отображением группы полей сущности в админ-панели.
- * Применяется для отображения встраиваемых (embedded) сущностей
+ * Применяется для отображения встраиваемых (embedded) сущностей.
  */
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class AdminFieldGroup

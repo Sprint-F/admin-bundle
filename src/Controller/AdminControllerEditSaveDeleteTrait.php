@@ -77,21 +77,17 @@ trait AdminControllerEditSaveDeleteTrait
     }
 
     /**
-     * Класс для формы редактирования сущности
+     * Класс для формы редактирования сущности.
      */
     protected function getEditFormTypeClass(): string
     {
         return FormType::class;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function createFormBuilder(mixed $data = null, array $options = []): FormBuilderInterface
     {
         return $this->container->get('form.factory')->createBuilder($this->getEditFormTypeClass(), $data, $options);
     }
-
 
     /**
      * Создание форм-билдера для формы добавления и редактирования сущности.

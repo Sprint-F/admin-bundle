@@ -2,8 +2,6 @@
 
 namespace SprintF\Bundle\Admin\Controller;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use SprintF\Bundle\Admin\Attribute\EntityLabel;
@@ -11,18 +9,15 @@ use SprintF\Bundle\Admin\Button\EntityButton;
 use SprintF\Bundle\Admin\Button\TableButton;
 use SprintF\Bundle\Admin\Field\EntityField;
 use SprintF\Bundle\Admin\Filter\FilterAbstract;
-use SprintF\Bundle\Admin\Form\Type\FileUploadType;
 use SprintF\Bundle\Workflow\Entity\WorkflowEntityInterface;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\ResetType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * @mixin AbstractAdminController
@@ -206,8 +201,8 @@ trait AdminControllerIndexTrait
     }
 
     /**
-     * Список фильтров для страницы. 
-     * 
+     * Список фильтров для страницы.
+     *
      * @return FilterAbstract[]
      */
     protected function getIndexFilters(): array
@@ -230,6 +225,7 @@ trait AdminControllerIndexTrait
     {
         /** @var FormFactoryInterface $factory */
         $factory = $this->container->get('form.factory');
+
         return $factory->createNamedBuilder('filters', $this->getIndexFiltersFormTypeClass(), $data, $options);
     }
 
@@ -298,7 +294,7 @@ trait AdminControllerIndexTrait
 
         $baseUrl = $this->getIndexRoute();
         if (!empty($filtersData)) {
-            $baseUrl .= '?' . http_build_query(['filters' => $filtersData]);
+            $baseUrl .= '?'.http_build_query(['filters' => $filtersData]);
         }
 
         $qb
