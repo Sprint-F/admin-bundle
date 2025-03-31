@@ -172,45 +172,51 @@ trait AdminControllerEditSaveDeleteTrait
         $form = $formBuilder->getForm();
 
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entity = $form->getData();
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $entity = $form->getData();
 
-            // Обработка полей с загрузкой файлов
-            foreach ($this->getEditFields($entity) as $key => $field) {
-                if (is_a($field, FileField::class, true)) {
-                    /** @var UploadedFile $file */
-                    $formField = $form->get($field->name);
-                    $file = $formField->getData();
+                // Обработка полей с загрузкой файлов
+                foreach ($this->getEditFields($entity) as $key => $field) {
+                    if (is_a($field, FileField::class, true)) {
+                        /** @var UploadedFile $file */
+                        $formField = $form->get($field->name);
+                        $file = $formField->getData();
 
-                    // Если не загружен новый файл, проверим - не надо ли удалить старый?
-                    if (null === $file) {
-                        if (!empty($request->request->all()[$form->createView()->vars['full_name']][$formField->createView()->vars['name']]['delete'])) {
-                            // @todo: хорошо бы работу с файлами вынести в отдельный сервис и здесь удалять ранее загруженный файл
-                            $entity->{'set'.ucfirst($field->name)}(null);
+                        // Если не загружен новый файл, проверим - не надо ли удалить старый?
+                        if (null === $file) {
+                            if (!empty($request->request->all()[$form->createView()->vars['full_name']][$formField->createView()->vars['name']]['delete'])) {
+                                // @todo: хорошо бы работу с файлами вынести в отдельный сервис и здесь удалять ранее загруженный файл
+                                $entity->{'set'.ucfirst($field->name)}(null);
+                            }
+                            continue;
                         }
-                        continue;
-                    }
 
-                    $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                    $originalExtension = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
-                    $safeFilename = $this->slugger->slug($originalFilename);
-                    $newFilename = $safeFilename.'-'.uniqid().'.'.$originalExtension;
+                        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                        $originalExtension = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+                        $safeFilename = $this->slugger->slug($originalFilename);
+                        $newFilename = $safeFilename.'-'.uniqid().'.'.$originalExtension;
 
-                    try {
-                        $file->move($field->uploadPath, $newFilename);
-                        $entity->{'set'.ucfirst($field->name)}($field->uploadPath.'/'.$newFilename);
-                    } catch (FileException $e) {
-                        $this->addFlash('error', 'Ошибка загрузки файла, поле '.$field->name);
+                        try {
+                            $file->move($field->uploadPath, $newFilename);
+                            $entity->{'set'.ucfirst($field->name)}($field->uploadPath.'/'.$newFilename);
+                        } catch (FileException $e) {
+                            $this->addFlash('error', 'Ошибка загрузки файла, поле '.$field->name);
+                        }
                     }
                 }
-            }
 
-            try {
-                $this->eh->saveEntity($entity);
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Ошибка сохранения данных: '.get_class($e).' - '.$e->getMessage());
+                try {
+                    $this->eh->saveEntity($entity);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Ошибка сохранения данных: '.get_class($e).' - '.$e->getMessage());
 
-                return new RedirectResponse($this->getEditRoute().'?id='.$entity->getId());
+                    return new RedirectResponse($this->getEditRoute().'?id='.$entity->getId());
+                }
+            } else {
+                foreach ($form->getErrors(true) as $error) {
+                    $this->addFlash('error', $error->getMessage());
+                }
             }
         }
 
