@@ -5,6 +5,7 @@ namespace SprintF\Bundle\Admin\Controller;
 use SprintF\Bundle\Admin\Handler\EntityHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Service\Attribute\Required;
 
 abstract class AbstractAdminController extends AbstractController
@@ -32,5 +33,13 @@ abstract class AbstractAdminController extends AbstractController
     public function setSlugger(SluggerInterface $slugger)
     {
         $this->slugger = $slugger;
+    }
+
+    protected ValidatorInterface $validator;
+
+    #[Required]
+    public function setValidator(ValidatorInterface $validator)
+    {
+        $this->validator = $validator;
     }
 }
