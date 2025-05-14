@@ -166,6 +166,8 @@ trait AdminControllerEditSaveDeleteTrait
      */
     public function save(Request $request): Response
     {
+        /** @todo: Убрать это дублирование. Тут оно нужно для понимания - новая ли сущность? */
+        $id = $request->get('form') ? $request->get('form')['id'] : $request->get('id', 'new');
         $entity = $this->getEntityByRequest($request);
 
         $formBuilder = $this->getEditFormBuilder($entity, FormBuilderScenario::SAVE);
@@ -210,7 +212,7 @@ trait AdminControllerEditSaveDeleteTrait
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Ошибка сохранения данных: '.get_class($e).' - '.$e->getMessage());
 
-                return new RedirectResponse($this->getEditRoute().'?id='.$entity->getId());
+                return new RedirectResponse($this->getEditRoute().'?id='.$id);
             }
         }
 
