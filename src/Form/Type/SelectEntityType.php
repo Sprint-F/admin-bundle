@@ -17,7 +17,8 @@ class SelectEntityType extends \Symfony\Bridge\Doctrine\Form\Type\EntityType
         if (!$queryBuilder instanceof QueryBuilder) {
             throw new \TypeError(sprintf('Expected an instance of "%s", but got "%s".', QueryBuilder::class, get_debug_type($queryBuilder)));
         }
-        $queryBuilder->addOrderBy('e.id');
+        // Для стабильности выдаваемого результата добавляем дефолтную сортировку
+        $queryBuilder->addOrderBy($queryBuilder->getRootAlias().'.id');
 
         return parent::getLoader($manager, $queryBuilder, $class);
     }
