@@ -156,7 +156,7 @@ trait AdminControllerEditSaveDeleteTrait
             'entity' => $entity,
             'isNew' => 'new' === $id,
             'label' => $this->eh->getEntityLabel(static::getEntityClass()),
-            'fields' => $this->getEditFields(),
+            'fields' => $this->getEditFields($entity),
             'form' => $formBuilder->getForm(),
         ]);
     }
