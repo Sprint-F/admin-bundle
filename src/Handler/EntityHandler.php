@@ -202,6 +202,7 @@ class EntityHandler
                     $help = $adminFieldAttribute->help;
                 } else {
                     $label = $property->getName();
+                    $help = null;
                 }
 
                 $isPrimary = false;
