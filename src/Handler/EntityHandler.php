@@ -82,6 +82,46 @@ class EntityHandler
         return false;
     }
 
+    private function getTreeRootColumn(string $entityClass): ?string
+    {
+        if (!$this->isEntityTree($entityClass)) {
+            return null;
+        }
+
+        $allEntityProperties = (new \ReflectionClass($entityClass))->getProperties();
+        foreach ($allEntityProperties as $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
+
+            if (!empty($property->getAttributes('Gedmo\Mapping\Annotation\TreeRoot'))) {
+                return $property->getName();
+            }
+        }
+
+        return null;
+    }
+
+    private function getTreeLeftKeyColumn(string $entityClass): ?string
+    {
+        if (!$this->isEntityTree($entityClass)) {
+            return null;
+        }
+
+        $allEntityProperties = (new \ReflectionClass($entityClass))->getProperties();
+        foreach ($allEntityProperties as $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
+
+            if (!empty($property->getAttributes('Gedmo\Mapping\Annotation\TreeLeft'))) {
+                return $property->getName();
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Возвращает базовый QueryBuilder, настроенный на выборку всех сущностей указанного класса из базы данных
      * Порядок задается полями первичного ключа.
@@ -90,8 +130,12 @@ class EntityHandler
     {
         $qb = $this->em->createQueryBuilder();
         $qb->select('e')->from($entityClass, 'e');
-        foreach ($this->getPrimaryKeyFields($entityClass) as $primaryKeyField) {
-            $qb->addOrderBy('e.'.$primaryKeyField->name, 'ASC');
+        if ($this->isEntityTree($entityClass)) {
+            $qb->orderBy(sprintf('e.%s, e.%s', $this->getTreeRootColumn($entityClass), $this->getTreeLeftKeyColumn($entityClass)), 'ASC');
+        } else {
+            foreach ($this->getPrimaryKeyFields($entityClass) as $primaryKeyField) {
+                $qb->addOrderBy('e.'.$primaryKeyField->name, 'ASC');
+            }
         }
 
         return $qb;
@@ -189,11 +233,11 @@ class EntityHandler
             // Если сущность представляет собой элемент дерева, то пропускаем служебные свойства дерева
             if ($this->isEntityTree($entityClass)) {
                 foreach ([
-                    'Gedmo\Mapping\Annotation\TreeLeft',
-                    'Gedmo\Mapping\Annotation\TreeRight',
-                    'Gedmo\Mapping\Annotation\TreeLevel',
-                    'Gedmo\Mapping\Annotation\TreeRoot',
-                ] as $treeColumnAttribute) {
+                             'Gedmo\Mapping\Annotation\TreeLeft',
+                             'Gedmo\Mapping\Annotation\TreeRight',
+                             'Gedmo\Mapping\Annotation\TreeLevel',
+                             'Gedmo\Mapping\Annotation\TreeRoot',
+                         ] as $treeColumnAttribute) {
                     if (!empty($property->getAttributes($treeColumnAttribute))) {
                         continue 2;
                     }
