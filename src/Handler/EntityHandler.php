@@ -71,7 +71,7 @@ class EntityHandler
         return $attr;
     }
 
-    private function isEntityTree(string $entityClass): bool
+    public function isEntityTree(string $entityClass): bool
     {
         $classReflector = new \ReflectionClass($entityClass);
         $attrs = $classReflector->getAttributes('Gedmo\Mapping\Annotation\Tree');
@@ -115,6 +115,26 @@ class EntityHandler
             }
 
             if (!empty($property->getAttributes('Gedmo\Mapping\Annotation\TreeLeft'))) {
+                return $property->getName();
+            }
+        }
+
+        return null;
+    }
+
+    public function getTreeParentColumn(string $entityClass): ?string
+    {
+        if (!$this->isEntityTree($entityClass)) {
+            return null;
+        }
+
+        $allEntityProperties = (new \ReflectionClass($entityClass))->getProperties();
+        foreach ($allEntityProperties as $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
+
+            if (!empty($property->getAttributes('Gedmo\Mapping\Annotation\TreeParent'))) {
                 return $property->getName();
             }
         }

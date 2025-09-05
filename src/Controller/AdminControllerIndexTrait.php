@@ -47,7 +47,14 @@ trait AdminControllerIndexTrait
      */
     protected function getIndexFields(): array
     {
-        return $this->eh->getFields(static::getEntityClass());
+        $fields = $this->eh->getFields(static::getEntityClass());
+
+        // Кроме всех служебных полей дерева, в главной таблице следует удалить поле "родительская нода":
+        if ($this->eh->isEntityTree(static::getEntityClass())) {
+            unset($fields[$this->eh->getTreeParentColumn(static::getEntityClass())]);
+        }
+
+        return $fields;
     }
 
     /**
