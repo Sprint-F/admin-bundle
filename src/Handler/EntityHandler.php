@@ -27,6 +27,7 @@ use SprintF\Bundle\Admin\Field\HasOneField;
 use SprintF\Bundle\Admin\Field\JsonField;
 use SprintF\Bundle\Admin\Field\TextField;
 use SprintF\Bundle\Admin\Form\Type\SelectEntityType;
+use SprintF\Bundle\Admin\Form\Type\SelectTreeEntityType;
 use SprintF\Bundle\Workflow\Entity\WorkflowEntityInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -253,11 +254,11 @@ class EntityHandler
             // Если сущность представляет собой элемент дерева, то пропускаем служебные свойства дерева
             if ($this->isEntityTree($entityClass)) {
                 foreach ([
-                    'Gedmo\Mapping\Annotation\TreeLeft',
-                    'Gedmo\Mapping\Annotation\TreeRight',
-                    'Gedmo\Mapping\Annotation\TreeLevel',
-                    'Gedmo\Mapping\Annotation\TreeRoot',
-                ] as $treeColumnAttribute) {
+                             'Gedmo\Mapping\Annotation\TreeLeft',
+                             'Gedmo\Mapping\Annotation\TreeRight',
+                             'Gedmo\Mapping\Annotation\TreeLevel',
+                             'Gedmo\Mapping\Annotation\TreeRoot',
+                         ] as $treeColumnAttribute) {
                     if (!empty($property->getAttributes($treeColumnAttribute))) {
                         continue 2;
                     }
@@ -355,7 +356,7 @@ class EntityHandler
             // Отношение "многие-к-одному" или "один-к-одному"
             $propertyHasOneAttributes = $property->getAttributes(ManyToOne::class) ?: $property->getAttributes(OneToOne::class);
             if (!empty($propertyHasOneAttributes)) {
-                $field = $this->getFieldForHasOneProperty($property, $propertyHasOneAttributes[0]->newInstance());
+                $field = $this->getFieldForHasOneProperty($entityClass, $property, $propertyHasOneAttributes[0]->newInstance());
                 if (null !== $field) {
                     $fields[$property->getName()] = $field;
                 }
@@ -385,7 +386,7 @@ class EntityHandler
     /**
      * По рефлектору свойства и по атрибуту Doctrine ManyToOne или OneToOne строим объект поля админ-панели.
      */
-    private function getFieldForHasOneProperty(\ReflectionProperty $property, ManyToOne|OneToOne $propertyHasOneAttribute): ?HasOneField
+    private function getFieldForHasOneProperty(string $entityClass, \ReflectionProperty $property, ManyToOne|OneToOne $propertyHasOneAttribute): ?HasOneField
     {
         $targetEntity = $propertyHasOneAttribute->targetEntity;
 
@@ -401,7 +402,7 @@ class EntityHandler
         $field = new HasOneField(
             name: $property->getName(),
             label: $label,
-            formType: SelectEntityType::class,
+            formType: $this->isEntityTree($entityClass) ? SelectTreeEntityType::class : SelectEntityType::class,
             formOptions: ['required' => !$property->getType()?->allowsNull(), 'class' => $targetEntity],
             primary: false,
         );
