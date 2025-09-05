@@ -402,10 +402,18 @@ class EntityHandler
         $field = new HasOneField(
             name: $property->getName(),
             label: $label,
-            formType: $this->isEntityTree($entityClass) ? SelectTreeEntityType::class : SelectEntityType::class,
+            formType: SelectEntityType::class,
             formOptions: ['required' => !$property->getType()?->allowsNull(), 'class' => $targetEntity],
             primary: false,
         );
+
+        if ($this->isEntityTree($entityClass)) {
+            $left = $this->getTreeLeftKeyColumn($entityClass);
+            $field->formOptions['query_builder'] = function (EntityRepository $er) use ($left): QueryBuilder {
+                return $er->createQueryBuilder('e')
+                    ->orderBy('e.'.$left, 'ASC');
+            };
+        }
 
         if ($field instanceof FieldNeedAppParamsInterface) {
             $field->setAppParams($this->params);
