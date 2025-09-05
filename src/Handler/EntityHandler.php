@@ -71,6 +71,17 @@ class EntityHandler
         return $attr;
     }
 
+    private function isEntityTree(string $entityClass): bool
+    {
+        $classReflector = new \ReflectionClass($entityClass);
+        $attrs = $classReflector->getAttributes('Gedmo\Mapping\Annotation\Tree');
+        if (!empty($attrs)) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Возвращает базовый QueryBuilder, настроенный на выборку всех сущностей указанного класса из базы данных
      * Порядок задается полями первичного ключа.
@@ -173,6 +184,20 @@ class EntityHandler
             // Статические свойства нас не интересуют, пропускаем
             if ($property->isStatic()) {
                 continue;
+            }
+
+            // Если сущность представляет собой элемент дерева, то пропускаем служебные свойства дерева
+            if ($this->isEntityTree($entityClass)) {
+                foreach ([
+                    'Gedmo\Mapping\Annotation\TreeLeft',
+                    'Gedmo\Mapping\Annotation\TreeRight',
+                    'Gedmo\Mapping\Annotation\TreeLevel',
+                    'Gedmo\Mapping\Annotation\TreeRoot',
+                ] as $treeColumnAttribute) {
+                    if (!empty($property->getAttributes($treeColumnAttribute))) {
+                        continue 2;
+                    }
+                }
             }
 
             // Свойство, помеченное атрибутом AdminFieldGroup (вложенная сущность)
