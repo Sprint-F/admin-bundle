@@ -49,7 +49,7 @@ trait AdminControllerIndexTrait
     {
         $fields = $this->eh->getFields(static::getEntityClass());
 
-        // Кроме всех служебных полей дерева, в главной таблице следует удалить поле "родительская нода":
+        // Кроме всех служебных полей дерева, в главной таблице следует удалить поле "родительская нода"
         if ($this->eh->isEntityTree(static::getEntityClass())) {
             unset($fields[$this->eh->getTreeParentColumn(static::getEntityClass())]);
         }
@@ -62,6 +62,10 @@ trait AdminControllerIndexTrait
      */
     protected function getIndexViewPath(): string
     {
+        if ($this->eh->isEntityTree(static::getEntityClass())) {
+            return '@SprintFAdmin/base/index-tree.html.twig';
+        }
+
         return '@SprintFAdmin/base/index.html.twig';
     }
 
@@ -304,9 +308,13 @@ trait AdminControllerIndexTrait
             $baseUrl .= '?'.http_build_query(['filters' => $filtersData]);
         }
 
-        $qb
-            ->setFirstResult(($page - 1) * static::ENTITITES_PER_PAGE)
-            ->setMaxResults(static::ENTITITES_PER_PAGE);
+        // Пагинация для деревьев не применяется
+        if (!$this->eh->isEntityTree(static::getEntityClass())) {
+            $qb
+                ->setFirstResult(($page - 1) * static::ENTITITES_PER_PAGE)
+                ->setMaxResults(static::ENTITITES_PER_PAGE)
+            ;
+        }
         $paginator = new Paginator($qb, true);
         $total = $paginator->count();
 

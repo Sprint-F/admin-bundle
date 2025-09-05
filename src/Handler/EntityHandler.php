@@ -253,11 +253,11 @@ class EntityHandler
             // Если сущность представляет собой элемент дерева, то пропускаем служебные свойства дерева
             if ($this->isEntityTree($entityClass)) {
                 foreach ([
-                             'Gedmo\Mapping\Annotation\TreeLeft',
-                             'Gedmo\Mapping\Annotation\TreeRight',
-                             'Gedmo\Mapping\Annotation\TreeLevel',
-                             'Gedmo\Mapping\Annotation\TreeRoot',
-                         ] as $treeColumnAttribute) {
+                    'Gedmo\Mapping\Annotation\TreeLeft',
+                    'Gedmo\Mapping\Annotation\TreeRight',
+                    'Gedmo\Mapping\Annotation\TreeLevel',
+                    'Gedmo\Mapping\Annotation\TreeRoot',
+                ] as $treeColumnAttribute) {
                     if (!empty($property->getAttributes($treeColumnAttribute))) {
                         continue 2;
                     }
