@@ -327,20 +327,6 @@
 <script src="{{ asset('bundles/sprintfadmin/assets/js/volt.js') }}"></script>
 
 {% block editor %}
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-<script>
-    let editors = document.getElementsByClassName('editor');
-    for (let i = 0; i < editors.length; i++) {
-        let editor = editors[i];
-        editor.removeAttribute('required'); // Chrome + Symfony Forms hack
-    }
-    tinymce.init({
-        selector: '.editor',
-        plugins: ['link', 'image', 'lists'],
-        toolbar: 'undo redo | styles | bold italic | alignleft aligncenter alignright alignjustify | ' +
-            'bullist numlist outdent indent | link image',
-    });
-</script>
 {% endblock %}
 
 </body>
