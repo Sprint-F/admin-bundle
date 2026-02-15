@@ -3,7 +3,7 @@
 namespace SprintF\Bundle\Admin\Field;
 
 use SprintF\Bundle\Datetime\Component\Form\Type\DateRangeType;
-use SprintF\Bundle\Datetime\Value\DateRange;
+use SprintF\ValueObjects\Type\DateRange;
 
 /**
  * Представление поля типа "Диапазон дат".

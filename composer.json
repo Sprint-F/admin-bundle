@@ -16,7 +16,7 @@
     "homepage": "https://sprintf.ru",
     "require": {
         "php": "^8.1",
-        "sprintf/doctrine-datetime-bundle": "^0.3",
+        "sprintf/doctrine-datetime-bundle": "^0.4",
         "sprintf/value-objects": "^0.1.0",
         "sprintf/workflow-bundle": "^0.1.5",
         "symfony/dependency-injection": "*",
