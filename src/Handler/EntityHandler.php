@@ -14,7 +14,6 @@ use Doctrine\ORM\QueryBuilder;
 use SprintF\Bundle\Admin\Attribute\AdminField;
 use SprintF\Bundle\Admin\Attribute\AdminFieldGroup;
 use SprintF\Bundle\Admin\Attribute\EntityLabel;
-use SprintF\Bundle\Admin\Enum\EnumWithLabelInterface;
 use SprintF\Bundle\Admin\Field\BooleanField;
 use SprintF\Bundle\Admin\Field\DateField;
 use SprintF\Bundle\Admin\Field\DateTimeField;
@@ -29,6 +28,7 @@ use SprintF\Bundle\Admin\Field\TextField;
 use SprintF\Bundle\Admin\Form\Type\SelectEntityType;
 use SprintF\Bundle\Admin\Form\Type\SelectTreeEntityType;
 use SprintF\Bundle\Workflow\Entity\WorkflowEntityInterface;
+use SprintF\ValueObjects\Enum\LabeledEnum;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
@@ -306,7 +306,7 @@ class EntityHandler
                     case !empty($adminFieldAttribute->class):
                         $fieldClass = $adminFieldAttribute->class;
                         break;
-                    case ($property->getType() instanceof \ReflectionNamedType) && is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class):
+                    case ($property->getType() instanceof \ReflectionNamedType) && is_subclass_of($property->getType()?->getName(), LabeledEnum::class):
                         $fieldClass = EnumField::class;
                         break;
                     default:
@@ -315,7 +315,7 @@ class EntityHandler
 
                 // Определяем класс поля формы Symfony
                 switch (true) {
-                    case ($property->getType() instanceof \ReflectionNamedType) && is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class):
+                    case ($property->getType() instanceof \ReflectionNamedType) && is_subclass_of($property->getType()?->getName(), LabeledEnum::class):
                         $formType = EnumType::class;
                         break;
                     default:
@@ -326,10 +326,10 @@ class EntityHandler
                 if (is_a($formType, CheckboxType::class, true)) {
                     $formOptions['required'] = false;
                 }
-                if (($property->getType() instanceof \ReflectionNamedType) && is_subclass_of($property->getType()?->getName(), EnumWithLabelInterface::class) && enum_exists($property->getType()?->getName())) {
+                if (($property->getType() instanceof \ReflectionNamedType) && is_subclass_of($property->getType()?->getName(), LabeledEnum::class) && enum_exists($property->getType()?->getName())) {
                     $enumType = $property->getType()?->getName();
                     $formOptions['class'] = $enumType;
-                    $formOptions['choice_label'] = function ($choice, $key, $value) {
+                    $formOptions['choice_label'] = function (LabeledEnum $choice, $key, $value) {
                         return $choice->label();
                     };
                 }
