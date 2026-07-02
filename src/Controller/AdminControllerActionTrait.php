@@ -107,13 +107,13 @@ trait AdminControllerActionTrait
             throw new \Exception('Сущность не имеет связанного с ней бизнес-процесса');
         }
 
-        $actionClass = $request->get('action', null);
+        $actionClass = $request->query->get('action', null);
         if (null === $actionClass || !is_subclass_of($actionClass, ActionAbstract::class)) {
             throw $this->createNotFoundException('Действие не указано');
         }
         $actionInfo = $entityClass::getWorkflow()->getActionInfoByClass($actionClass);
 
-        $entityId = $request->get('id', null);
+        $entityId = $request->query->get('id', null);
         $entity = $this->eh->findOrNewEntity($entityClass, $entityId);
         if (null === $entity) {
             throw $this->createNotFoundException('Сущность не найдена');
@@ -139,12 +139,12 @@ trait AdminControllerActionTrait
             throw new \Exception('Сущность не имеет связанного с ней бизнес-процесса');
         }
 
-        $actionClass = $request->get('action', null);
+        $actionClass = $request->query->get('action', null);
         if (null === $actionClass || !is_subclass_of($actionClass, ActionAbstract::class)) {
             throw $this->createNotFoundException('Действие не указано');
         }
 
-        $entityId = $request->get('id', null);
+        $entityId = $request->query->get('id', null);
         $entity = $this->eh->findOrNewEntity($entityClass, $entityId);
         if (null === $entity) {
             throw $this->createNotFoundException('Сущность не найдена');

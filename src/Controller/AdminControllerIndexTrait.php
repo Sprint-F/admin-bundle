@@ -286,7 +286,7 @@ trait AdminControllerIndexTrait
      */
     public function index(Request $request): Response
     {
-        $page = $request->get('page', 1);
+        $page = $request->query->get('page', 1);
         $qb = $this->getIndexQueryBuilder();
 
         $filtersFormBuilder = $this->getIndexFiltersFormBuilder($request);

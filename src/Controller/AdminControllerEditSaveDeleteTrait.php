@@ -132,7 +132,7 @@ trait AdminControllerEditSaveDeleteTrait
 
     public function getEntityByRequest(Request $request): object
     {
-        $id = $request->get('form') ? $request->get('form')['id'] : $request->get('id', 'new');
+        $id = $request->request->get('form') ? $request->request->get('form')['id'] : $request->query->get('id', 'new');
         $repository = $this->eh->getEntityRepository(static::getEntityClass());
 
         return 'new' === $id || empty($id)
@@ -145,7 +145,7 @@ trait AdminControllerEditSaveDeleteTrait
      */
     public function edit(Request $request): Response
     {
-        $id = $request->get('id', 'new');
+        $id = $request->query->get('id', 'new');
         $entity = $this->getEntityByRequest($request);
 
         $formBuilder = $this->getEditFormBuilder($entity);
@@ -167,7 +167,7 @@ trait AdminControllerEditSaveDeleteTrait
     public function save(Request $request): Response
     {
         /** @todo: Убрать это дублирование. Тут оно нужно для понимания - новая ли сущность? */
-        $id = $request->get('form') ? $request->get('form')['id'] : $request->get('id', 'new');
+        $id = $request->request->get('form') ? $request->request->get('form')['id'] : $request->query->get('id', 'new');
         $entity = $this->getEntityByRequest($request);
 
         $formBuilder = $this->getEditFormBuilder($entity, FormBuilderScenario::SAVE);

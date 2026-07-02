@@ -60,7 +60,7 @@ trait AdminControllerLogTrait
      */
     public function log($id, Request $request): Response
     {
-        $page = $request->get('page', 1);
+        $page = $request->query->get('page', 1);
         $qb = $this->getLogQueryBuilder($id);
         $qb
             ->setFirstResult(($page - 1) * static::ENTITITES_PER_PAGE)
