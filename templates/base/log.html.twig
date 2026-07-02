@@ -1,14 +1,14 @@
 {% extends '@SprintFAdmin/layouts/admin/main.html.twig' %}
 {% import '@SprintFAdmin/macro/macro.html.twig' as macro %}
 
-{% block title %}Действия над {{ label.single|capitalize }} #{{ id }}{% endblock %}
+{% block title %}Действия над {{ label.single|trans|capitalize }} #{{ id }}{% endblock %}
 
 {% block nav %}
     {% include '@SprintFAdmin/layouts/admin/parts/nav.html.twig' with {'active': route|trim('/')} %}
 {% endblock %}
 
 {% block breadcrumbs %}
-    {% include '@SprintFAdmin/layouts/admin/parts/breadcrumbs.html.twig' with {'items' : [{'label': label.plural|capitalize, 'url': route}]} %}
+    {% include '@SprintFAdmin/layouts/admin/parts/breadcrumbs.html.twig' with {'items' : [{'label': label.plural|trans|capitalize, 'url': route}]} %}
 {% endblock %}
 
 {% block buttons %}

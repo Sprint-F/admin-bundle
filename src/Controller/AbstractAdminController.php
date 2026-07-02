@@ -6,6 +6,7 @@ use SprintF\Bundle\Admin\Handler\EntityHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Contracts\Service\Attribute\Required;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 abstract class AbstractAdminController extends AbstractController
 {
@@ -32,5 +33,13 @@ abstract class AbstractAdminController extends AbstractController
     public function setSlugger(SluggerInterface $slugger)
     {
         $this->slugger = $slugger;
+    }
+
+    protected TranslatorInterface $translator;
+
+    #[Required]
+    public function setTranslator(TranslatorInterface $translator)
+    {
+        $this->translator = $translator;
     }
 }

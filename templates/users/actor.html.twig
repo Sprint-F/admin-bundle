@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    {% include '@SprintFAdmin/layouts/admin/parts/breadcrumbs.html.twig' with {'items' : [{'label': label.plural|capitalize, 'url': route}]} %}
+    {% include '@SprintFAdmin/layouts/admin/parts/breadcrumbs.html.twig' with {'items' : [{'label': label.plural|trans|capitalize, 'url': route}]} %}
 {% endblock %}
 
 {% block buttons %}
